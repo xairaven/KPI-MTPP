@@ -1,0 +1,26 @@
+[workspace]
+resolver = "2"
+
+members = ["Lab1"]
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+panic = "abort"
+strip = "symbols"
+
+[workspace.lints.clippy]
+expect_used = "deny"
+panic = "deny"
+unwrap_used = "deny"
+
+collapsible_if = "warn"
+collapsible_else_if = "warn"
+collapsible_match = "warn"
+collapsible_str_replace = "warn"
+indexing_slicing = "deny"
+
+[workspace.lints.rust]
+unused_doc_comments = "allow"
+unsafe_code = "deny"
