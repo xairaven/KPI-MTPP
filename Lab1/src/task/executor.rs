@@ -27,18 +27,37 @@ pub trait Executable {
                 .arg("--processes-mode")
                 .arg("--process-index").arg(i.to_string())
                 .arg("--total-processes").arg(processes.to_string())
-                // Suppress child output so it doesn't mess up our benchmark report console
-                .stdout(Stdio::null());
+                // Capture the output instead of discarding it
+                .stdout(Stdio::piped());
 
             let child = cmd.spawn().map_err(SystemError::ChildProcess)?;
             children.push(child);
         }
 
-        // Wait for all child processes to finish their specific chunks
-        for mut child in children {
-            child.wait().map_err(SystemError::WaitingForChildProcess)?;
+        let mut process_outputs = Vec::new();
+
+        // Wait for all children to finish and collect their printed results
+        for child in children {
+            let output = child
+                .wait_with_output()
+                .map_err(SystemError::WaitingForChildProcess)?;
+
+            // Convert the raw bytes from stdout into a UTF-8 string
+            let stdout_str = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            if !stdout_str.is_empty() {
+                process_outputs.push(stdout_str);
+            }
         }
 
+        // Pass the collected string data back to the task for specific parsing and aggregation
+        self.aggregate_process_results(process_outputs)?;
+
+        Ok(())
+    }
+
+    // Parses and combines the results returned by the child processes via stdout
+    fn aggregate_process_results(&self, _results: Vec<String>) -> Result<(), Error> {
+        // Default empty implementation for tasks that do not need IPC aggregation
         Ok(())
     }
 
