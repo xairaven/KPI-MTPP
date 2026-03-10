@@ -1,3 +1,5 @@
+use crate::logs::LogError;
+
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("User input. {0}")]
@@ -11,6 +13,9 @@ pub enum Error {
 
     #[error("System. {0}")]
     System(#[from] SystemError),
+
+    #[error("Logging. {0}")]
+    Log(#[from] LogError),
 }
 
 #[derive(Debug, thiserror::Error)]

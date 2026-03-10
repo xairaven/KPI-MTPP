@@ -1,4 +1,5 @@
 use clap::Parser;
+use log::LevelFilter;
 
 #[derive(Parser)]
 pub struct InputArgs {
@@ -21,6 +22,15 @@ pub struct InputArgs {
     5) I/O-bound operation involving recursive word counting in randomly generated text files."
     )]
     pub task: usize,
+
+    #[arg(
+        short,
+        long,
+        value_enum,
+        default_value = "off",
+        help = "Set the logging level (off, error, warn, info, debug, trace)"
+    )]
+    pub log_level: LevelFilter,
 
     // Enable `processes mode` for distributed execution.
     // Not for user -- program will use it internally when needed.

@@ -1,10 +1,16 @@
 use crate::cli::InputArgs;
 use crate::errors::{CliError, Error};
+use crate::logs::Logger;
 use crate::task::tasks;
 use clap::Parser;
 
 fn main() {
     let args = InputArgs::parse();
+
+    Logger::from_args(&args).setup().unwrap_or_else(|error| {
+        eprintln!("Error: {}", error);
+        std::process::exit(1);
+    });
 
     match run_task(args) {
         Ok(report) => println!("{}", report),
@@ -45,6 +51,7 @@ fn run_task(args: InputArgs) -> Result<String, Error> {
 
 mod cli;
 mod errors;
+mod logs;
 mod task;
 
 mod tasks {
