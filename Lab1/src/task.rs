@@ -16,7 +16,7 @@ pub const BENCHMARKS: [BenchmarkMetadata; 10] = [
 ];
 
 pub fn tasks() -> Vec<Box<dyn Reportable>> {
-    vec![Box::new(MonteCarlo)]
+    vec![Box::new(MonteCarlo::with_iterations(100_000_000))]
 }
 
 pub mod benchmark;

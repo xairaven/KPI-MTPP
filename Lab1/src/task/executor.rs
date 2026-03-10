@@ -50,13 +50,15 @@ pub trait Executable {
         }
 
         // Pass the collected string data back to the task for specific parsing and aggregation
-        self.aggregate_process_results(process_outputs)?;
+        self.aggregate_process_results(processes, process_outputs)?;
 
         Ok(())
     }
 
     // Parses and combines the results returned by the child processes via stdout
-    fn aggregate_process_results(&self, _results: Vec<String>) -> Result<(), Error> {
+    fn aggregate_process_results(
+        &self, _total_processes: usize, _results: Vec<String>,
+    ) -> Result<(), Error> {
         // Default empty implementation for tasks that do not need IPC aggregation
         Ok(())
     }

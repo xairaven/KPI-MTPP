@@ -3,15 +3,11 @@ use log::LevelFilter;
 
 #[derive(Parser)]
 pub struct InputArgs {
-    #[arg(short,
-
-    long,
-
-    value_parser = clap::value_parser!(u8).range(1..=5),
-
-    help = "Task number to execute (1-5)",
-
-    long_help = "Specify the task number to execute.
+    #[arg(
+        short,
+        long,
+        help = "Task number to execute (1-5)",
+        long_help = "Specify the task number to execute.
     Valid options are strictly from 1 to 5 inclusive. Any other input will be rejected by the parser.
 
     Tasks:

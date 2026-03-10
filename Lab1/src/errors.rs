@@ -44,6 +44,12 @@ pub enum SystemError {
     #[error("Failed to spawn child process. {0}")]
     ChildProcess(std::io::Error),
 
+    #[error("Failed to parse child process output - \"{0}\"")]
+    FailedParsingChildOutput(String),
+
+    #[error("Thread panicked during execution.")]
+    ThreadPanicked,
+
     #[error("Failed while waiting for child process to finish. {0}")]
     WaitingForChildProcess(std::io::Error),
 }
