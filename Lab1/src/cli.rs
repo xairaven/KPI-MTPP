@@ -3,9 +3,13 @@ use clap::Parser;
 #[derive(Parser)]
 pub struct InputArgs {
     #[arg(short,
-        long,
+
+    long,
+
     value_parser = clap::value_parser!(u8).range(1..=5),
+
     help = "Task number to execute (1-5)",
+
     long_help = "Specify the task number to execute.
     Valid options are strictly from 1 to 5 inclusive. Any other input will be rejected by the parser.
 
@@ -18,6 +22,8 @@ pub struct InputArgs {
     )]
     pub task: u8,
 
-    #[arg(short, long, help = "Enable worker mode for distributed execution")]
-    pub worker_mode: bool,
+    // Enable `processes mode` for distributed execution.
+    // Not for user -- program will use it internally when needed.
+    #[arg(short, long, hide = true)]
+    pub processes_mode: bool,
 }
