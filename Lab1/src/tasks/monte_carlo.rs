@@ -36,7 +36,9 @@ impl Executable for MonteCarlo {
         todo!()
     }
 
-    fn run_processes(&self, processes: usize) -> Result<(), Error> {
+    fn run_process_chunk(
+        &self, process_index: usize, total_processes: usize,
+    ) -> Result<(), Error> {
         todo!()
     }
 }

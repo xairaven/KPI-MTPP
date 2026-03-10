@@ -20,10 +20,21 @@ pub struct InputArgs {
     4) Memory-bound operation that transposes a 10000x10000 matrix.
     5) I/O-bound operation involving recursive word counting in randomly generated text files."
     )]
-    pub task: u8,
+    pub task: usize,
 
     // Enable `processes mode` for distributed execution.
     // Not for user -- program will use it internally when needed.
     #[arg(short, long, hide = true)]
     pub processes_mode: bool,
+
+    // Identifies the specific chunk of work this child process should handle.
+    // E.g., process 0, process 1, process 2.
+    // Not for user -- program will use it internally when needed.
+    #[arg(long, hide = true)]
+    pub process_index: Option<usize>,
+
+    // Tells the child process how many chunks the data is divided into.
+    // Not for user -- program will use it internally when needed.
+    #[arg(long, hide = true)]
+    pub total_processes: Option<usize>,
 }

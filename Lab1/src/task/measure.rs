@@ -35,10 +35,12 @@ pub trait Measurable: Executable + Manageable {
     }
 
     // Measures the execution time of the process-based approach
-    fn measure_processes(&mut self, num_processes: usize) -> Result<Duration, Error> {
+    fn measure_processes(
+        &mut self, task_index: usize, num_processes: usize,
+    ) -> Result<Duration, Error> {
         self.setup()?;
         let start = Instant::now();
-        self.run_processes(num_processes)?;
+        self.run_processes(task_index, num_processes)?;
         let elapsed = start.elapsed();
         self.teardown()?;
         Ok(elapsed)

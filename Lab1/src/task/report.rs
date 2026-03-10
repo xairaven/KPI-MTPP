@@ -73,12 +73,12 @@ impl Report {
 pub trait Reportable: Benchmarkable {
     fn name(&self) -> &'static str;
 
-    fn report(&mut self) -> Result<Report, Error> {
+    fn report(&mut self, task_index: usize) -> Result<Report, Error> {
         let mut report = Report::default();
 
         report.add_task_header(self.name());
 
-        let benchmarks = self.benchmark()?;
+        let benchmarks = self.benchmark(task_index)?;
 
         // Sequential
         if let Some(sequential_report) =

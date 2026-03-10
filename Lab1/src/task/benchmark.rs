@@ -84,7 +84,7 @@ impl std::fmt::Display for BenchmarkResult {
 pub trait Benchmarkable: Measurable {
     fn benchmark_tasks(&self) -> Vec<BenchmarkMetadata>;
 
-    fn benchmark(&mut self) -> Result<Vec<BenchmarkResult>, Error> {
+    fn benchmark(&mut self, task_index: usize) -> Result<Vec<BenchmarkResult>, Error> {
         let mut results = Vec::new();
         for task_metadata in self.benchmark_tasks() {
             match task_metadata {
@@ -110,7 +110,7 @@ pub trait Benchmarkable: Measurable {
                     });
                 },
                 BenchmarkMetadata::Processes(units) => {
-                    let duration = self.measure_processes(units)?;
+                    let duration = self.measure_processes(task_index, units)?;
                     results.push(BenchmarkResult {
                         metadata: BenchmarkMetadata::Processes(units),
                         duration,
