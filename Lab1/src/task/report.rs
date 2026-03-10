@@ -1,3 +1,4 @@
+use crate::errors::Error;
 use crate::task::benchmark::{BenchmarkKind, BenchmarkResult, Benchmarkable};
 
 #[derive(Debug, Default)]
@@ -27,8 +28,16 @@ pub struct Report {
 }
 
 impl Report {
-    pub fn add_header(&mut self, header: &str) {
-        let header = format!("=== {} ===", header.to_ascii_uppercase().trim());
+    pub fn add_task_header(&mut self, task_name: &str) {
+        let header = format!(
+            "=== REPORT FOR {} ===",
+            task_name.to_ascii_uppercase().trim()
+        );
+        self.buffer.with_new_paragraph(&header);
+    }
+
+    pub fn add_method_header(&mut self, method: &str) {
+        let header = format!("- {} -", method.trim());
         self.buffer.with_new_paragraph(&header);
     }
 
@@ -49,7 +58,7 @@ impl Report {
         if !results.is_empty() {
             let mut report = Report::default();
 
-            report.add_header(&kind.to_string());
+            report.add_method_header(&kind.to_string());
             for result in results {
                 report.add_result(&result);
             }
@@ -64,10 +73,12 @@ impl Report {
 pub trait Reportable: Benchmarkable {
     fn name(&self) -> &'static str;
 
-    fn report(&mut self) -> Report {
+    fn report(&mut self) -> Result<Report, Error> {
         let mut report = Report::default();
 
-        let benchmarks = self.benchmark();
+        report.add_task_header(self.name());
+
+        let benchmarks = self.benchmark()?;
 
         // Sequential
         if let Some(sequential_report) =
@@ -95,6 +106,6 @@ pub trait Reportable: Benchmarkable {
             report.extend(processes_report);
         }
 
-        report
+        Ok(report)
     }
 }

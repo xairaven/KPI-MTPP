@@ -1,3 +1,4 @@
+use crate::errors::Error;
 use crate::task::measure::Measurable;
 use std::time::Duration;
 
@@ -83,33 +84,33 @@ impl std::fmt::Display for BenchmarkResult {
 pub trait Benchmarkable: Measurable {
     fn benchmark_tasks(&self) -> Vec<BenchmarkMetadata>;
 
-    fn benchmark(&mut self) -> Vec<BenchmarkResult> {
+    fn benchmark(&mut self) -> Result<Vec<BenchmarkResult>, Error> {
         let mut results = Vec::new();
         for task_metadata in self.benchmark_tasks() {
             match task_metadata {
                 BenchmarkMetadata::Sequential => {
-                    let duration = self.measure_sequential();
+                    let duration = self.measure_sequential()?;
                     results.push(BenchmarkResult {
                         metadata: BenchmarkMetadata::Sequential,
                         duration,
                     });
                 },
                 BenchmarkMetadata::Threads(units) => {
-                    let duration = self.measure_threads(units);
+                    let duration = self.measure_threads(units)?;
                     results.push(BenchmarkResult {
                         metadata: BenchmarkMetadata::Threads(units),
                         duration,
                     });
                 },
                 BenchmarkMetadata::Workers(units) => {
-                    let duration = self.measure_workers(units);
+                    let duration = self.measure_workers(units)?;
                     results.push(BenchmarkResult {
                         metadata: BenchmarkMetadata::Workers(units),
                         duration,
                     });
                 },
                 BenchmarkMetadata::Processes(units) => {
-                    let duration = self.measure_processes(units);
+                    let duration = self.measure_processes(units)?;
                     results.push(BenchmarkResult {
                         metadata: BenchmarkMetadata::Processes(units),
                         duration,
@@ -117,6 +118,6 @@ pub trait Benchmarkable: Measurable {
                 },
             }
         }
-        results
+        Ok(results)
     }
 }

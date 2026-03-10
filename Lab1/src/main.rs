@@ -6,8 +6,9 @@ use clap::Parser;
 fn main() {
     let args = InputArgs::parse();
 
-    if let Err(e) = run_task(args.task) {
-        eprintln!("Error: {}", e);
+    match run_task(args.task) {
+        Ok(report) => println!("{}", report),
+        Err(error) => eprintln!("Error: {}", error),
     }
 }
 
@@ -18,7 +19,7 @@ fn run_task(task: u8) -> Result<String, Error> {
         .nth(task as usize)
         .ok_or(Error::InvalidTaskNumber(task))?;
 
-    let report = task.report();
+    let report = task.report()?;
 
     Ok(report.text())
 }

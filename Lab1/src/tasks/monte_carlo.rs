@@ -1,3 +1,4 @@
+use crate::errors::Error;
 use crate::task;
 use crate::task::benchmark::{BenchmarkMetadata, Benchmarkable};
 use crate::task::executor::Executable;
@@ -23,19 +24,19 @@ impl Measurable for MonteCarlo {}
 impl Manageable for MonteCarlo {}
 
 impl Executable for MonteCarlo {
-    fn run_sequential(&self) {
+    fn run_sequential(&self) -> Result<(), Error> {
         todo!()
     }
 
-    fn run_threads(&self, threads: usize) {
+    fn run_threads(&self, threads: usize) -> Result<(), Error> {
         todo!()
     }
 
-    fn run_workers(&self, workers: usize) {
+    fn run_workers(&self, workers: usize) -> Result<(), Error> {
         todo!()
     }
 
-    fn run_processes(&self, processes: usize) {
+    fn run_processes(&self, processes: usize) -> Result<(), Error> {
         todo!()
     }
 }
