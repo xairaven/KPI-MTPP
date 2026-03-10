@@ -4,7 +4,7 @@ version = "0.0.1"
 authors = ["Oleksandr Kovalov <kovalov.o.o.-im51mn@edu.kpi.ua>"]
 
 edition = "2024"
-rust-version = "1.93.1"
+rust-version = "1.94"
 
 categories = ["science"]
 
@@ -16,3 +16,5 @@ repository = "https://github.com/xairaven/KPI-MTPP"
 workspace = true
 
 [dependencies]
+rayon = "1.11.0"
+thiserror = "2.0.18"
