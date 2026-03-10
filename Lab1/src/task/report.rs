@@ -7,11 +7,6 @@ pub struct TextBuffer {
 }
 
 impl TextBuffer {
-    pub fn with_new_paragraph(&mut self, line: &str) {
-        self.buffer.push('\n');
-        self.add_line(line);
-    }
-
     pub fn add_line(&mut self, line: &str) {
         self.buffer.push_str(line);
         self.buffer.push('\n');
@@ -33,12 +28,12 @@ impl Report {
             "=== REPORT FOR {} ===",
             task_name.to_ascii_uppercase().trim()
         );
-        self.buffer.with_new_paragraph(&header);
+        self.buffer.add_line(&header);
     }
 
     pub fn add_method_header(&mut self, method: &str) {
         let header = format!("- {} -", method.trim());
-        self.buffer.with_new_paragraph(&header);
+        self.buffer.add_line(&header);
     }
 
     pub fn add_result(&mut self, result: &BenchmarkResult) {
@@ -50,7 +45,7 @@ impl Report {
     }
 
     pub fn extend(&mut self, other: Report) {
-        self.buffer.with_new_paragraph(&other.text());
+        self.buffer.add_line(&other.text());
     }
 
     pub fn by_kind(benchmarks: &[BenchmarkResult], kind: BenchmarkKind) -> Option<Self> {
