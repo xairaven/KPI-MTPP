@@ -1,4 +1,4 @@
-pub trait TaskExecution {
+pub trait Executable {
     // Executes the task sequentially in a single main thread
     fn run_sequential(&self);
 
