@@ -2,6 +2,7 @@ use crate::task::benchmark::BenchmarkMetadata;
 use crate::task::report::Reportable;
 use crate::tasks::factorization::Factorization;
 use crate::tasks::monte_carlo::MonteCarlo;
+use crate::tasks::primes::Primes;
 
 pub const BENCHMARKS: [BenchmarkMetadata; 10] = [
     BenchmarkMetadata::Sequential,
@@ -20,6 +21,7 @@ pub fn tasks() -> Vec<Box<dyn Reportable>> {
     vec![
         Box::new(MonteCarlo::with_iterations(100_000_000)),
         Box::new(Factorization::default()),
+        Box::new(Primes::with_range(1..=10_000_000)),
     ]
 }
 
