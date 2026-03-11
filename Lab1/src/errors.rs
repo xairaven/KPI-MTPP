@@ -14,6 +14,9 @@ pub enum Error {
     #[error("System. {0}")]
     System(#[from] SystemError),
 
+    #[error("Task execution. {0}")]
+    Task(#[from] TaskError),
+
     #[error("Logging. {0}")]
     Log(#[from] LogError),
 }
@@ -55,4 +58,10 @@ pub enum SystemError {
 
     #[error("Failed while waiting for child process to finish. {0}")]
     WaitingForChildProcess(std::io::Error),
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum TaskError {
+    #[error("Indexing out of bounds. Tried to access index {0}.")]
+    IndexingOutOfBounds(usize),
 }
