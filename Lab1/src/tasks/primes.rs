@@ -45,17 +45,6 @@ impl Primes {
 
         true
     }
-
-    // Helper method to count prime numbers within a specific chunk.
-    fn count_primes_in_range(range: RangeInclusive<u64>) -> usize {
-        let mut count = 0;
-        for n in range {
-            if Self::is_prime(n) {
-                count += 1;
-            }
-        }
-        count
-    }
 }
 
 impl Benchmarkable for Primes {}
@@ -70,7 +59,12 @@ impl Reportable for Primes {
 
 impl Executable for Primes {
     fn run_sequential(&self) -> Result<(), Error> {
-        let total_primes = Self::count_primes_in_range(self.range.clone());
+        let mut total_primes = 0;
+        for n in self.range.clone() {
+            if Self::is_prime(n) {
+                total_primes += 1;
+            }
+        }
 
         log::info!(
             "TASK: {}, MODE: {}, RESULT: {}",
@@ -86,27 +80,27 @@ impl Executable for Primes {
         let start_bound = *self.range.start();
         let end_bound = *self.range.end();
 
-        // Calculate total items and chunk size to split the range evenly.
-        let total_elements = end_bound.saturating_sub(start_bound) + 1;
-        let chunk_size = total_elements.div_ceil(threads as u64);
-
         // Shared counter to safely accumulate the total primes found by all threads.
         let total_primes = AtomicUsize::new(0);
 
         thread::scope(|s| {
             for i in 0..threads {
-                let chunk_start = start_bound + (i as u64) * chunk_size;
-                let chunk_end = std::cmp::min(end_bound, chunk_start + chunk_size - 1);
-
                 let shared_total = &total_primes;
 
                 s.spawn(move || {
-                    if chunk_start <= chunk_end {
-                        let local_count =
-                            Self::count_primes_in_range(chunk_start..=chunk_end);
-                        // Add the local result to the global atomic counter.
-                        shared_total.fetch_add(local_count, Ordering::Relaxed);
+                    let mut local_count = 0;
+                    let mut current = start_bound + i as u64;
+
+                    // Interleaved distribution ensures perfect mathematical load balancing.
+                    while current <= end_bound {
+                        if Self::is_prime(current) {
+                            local_count += 1;
+                        }
+                        current += threads as u64;
                     }
+
+                    // Add the local result to the global atomic counter.
+                    shared_total.fetch_add(local_count, Ordering::Relaxed);
                 });
             }
         });
@@ -130,29 +124,14 @@ impl Executable for Primes {
             .build()
             .map_err(SystemError::RayonPoolBuild)?;
 
-        // Calculate chunks. Using more chunks than workers for better work-stealing.
-        let total_elements = end_bound.saturating_sub(start_bound) + 1;
-        let chunks_count = workers * 10;
-        let chunk_size = total_elements.div_ceil(chunks_count as u64);
-
         let total_primes: usize = pool.install(|| {
             use rayon::prelude::*;
 
-            // Map each chunk to its prime count, then sum all counts in parallel.
-            (0..chunks_count)
+            // Idiomatic Rayon: parallel iterator handles chunks and work-stealing automatically.
+            (start_bound..=end_bound)
                 .into_par_iter()
-                .map(|i| {
-                    let chunk_start = start_bound + (i as u64) * chunk_size;
-                    let chunk_end =
-                        std::cmp::min(end_bound, chunk_start + chunk_size - 1);
-
-                    if chunk_start <= chunk_end {
-                        Self::count_primes_in_range(chunk_start..=chunk_end)
-                    } else {
-                        0
-                    }
-                })
-                .sum()
+                .filter(|&n| Self::is_prime(n))
+                .count()
         });
 
         log::info!(
@@ -171,17 +150,15 @@ impl Executable for Primes {
         let start_bound = *self.range.start();
         let end_bound = *self.range.end();
 
-        let total_elements = end_bound.saturating_sub(start_bound) + 1;
-        let chunk_size = total_elements.div_ceil(total_processes as u64);
-
-        let chunk_start = start_bound + (process_index as u64) * chunk_size;
-        let chunk_end = std::cmp::min(end_bound, chunk_start + chunk_size - 1);
-
         let mut local_primes = 0;
+        let mut current = start_bound + process_index as u64;
 
-        // Execute only the mathematical range assigned to this specific process.
-        if chunk_start <= chunk_end {
-            local_primes = Self::count_primes_in_range(chunk_start..=chunk_end);
+        // Execute only the interleaved items assigned to this specific process.
+        while current <= end_bound {
+            if Self::is_prime(current) {
+                local_primes += 1;
+            }
+            current += total_processes as u64;
         }
 
         // Print the localized count to stdout for the orchestrator.
