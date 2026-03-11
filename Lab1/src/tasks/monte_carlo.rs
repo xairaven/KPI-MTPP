@@ -1,5 +1,4 @@
 use crate::errors::{Error, SystemError};
-use crate::task;
 use crate::task::benchmark::{BenchmarkMetadata, Benchmarkable};
 use crate::task::executor::Executable;
 use crate::task::lifecycle::Manageable;
@@ -50,20 +49,15 @@ impl MonteCarlo {
     }
 }
 
+impl Benchmarkable for MonteCarlo {}
+impl Measurable for MonteCarlo {}
+impl Manageable for MonteCarlo {}
+
 impl Reportable for MonteCarlo {
     fn name(&self) -> &'static str {
         "CPU-Bound: Monte-Carlo"
     }
 }
-
-impl Benchmarkable for MonteCarlo {
-    fn benchmark_tasks(&self) -> Vec<BenchmarkMetadata> {
-        task::BENCHMARKS.to_vec()
-    }
-}
-
-impl Measurable for MonteCarlo {}
-impl Manageable for MonteCarlo {}
 
 impl Executable for MonteCarlo {
     fn run_sequential(&self) -> Result<(), Error> {

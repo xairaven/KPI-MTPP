@@ -47,6 +47,9 @@ pub enum SystemError {
     #[error("Failed to parse child process output - \"{0}\"")]
     FailedParsingChildOutput(String),
 
+    #[error("Failed to build a rayon worker pool. {0}")]
+    RayonPoolBuild(#[from] rayon::ThreadPoolBuildError),
+
     #[error("Thread panicked during execution.")]
     ThreadPanicked,
 

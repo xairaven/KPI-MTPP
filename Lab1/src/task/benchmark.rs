@@ -1,4 +1,5 @@
 use crate::errors::Error;
+use crate::task;
 use crate::task::measure::Measurable;
 use std::time::Duration;
 
@@ -82,7 +83,9 @@ impl std::fmt::Display for BenchmarkResult {
 }
 
 pub trait Benchmarkable: Measurable {
-    fn benchmark_tasks(&self) -> Vec<BenchmarkMetadata>;
+    fn benchmark_tasks(&self) -> Vec<BenchmarkMetadata> {
+        task::BENCHMARKS.to_vec()
+    }
 
     fn benchmark(&mut self, task_index: usize) -> Result<Vec<BenchmarkResult>, Error> {
         let mut results = Vec::new();
