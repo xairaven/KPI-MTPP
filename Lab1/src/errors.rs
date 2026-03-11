@@ -34,10 +34,25 @@ pub enum CliError {
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum SetupError {}
+pub enum SetupError {
+    #[error("Failed to create a folder. {0}")]
+    CreateFolder(std::io::Error),
+
+    #[error("Failed to create a file. {0}")]
+    FileCreation(std::io::Error),
+
+    #[error("Failed to write to a file. {0}")]
+    FileWrite(std::io::Error),
+
+    #[error("Failed to create temporary directory. {0}")]
+    TemporaryDirectoryCreate(std::io::Error),
+}
 
 #[derive(Debug, thiserror::Error)]
-pub enum TeardownError {}
+pub enum TeardownError {
+    #[error("Failed to delete temporary directory. {0}")]
+    TemporaryDirectoryDelete(std::io::Error),
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum SystemError {
@@ -47,8 +62,23 @@ pub enum SystemError {
     #[error("Failed to spawn child process. {0}")]
     ChildProcess(std::io::Error),
 
+    #[error("Failed to read directory contents. {0}")]
+    DirectoryRead(std::io::Error),
+
+    #[error("Expected a directory but found a file at path: {0}")]
+    DirectoryExpected(String),
+
+    #[error("Failed to read a directory entry. {0}")]
+    DirectoryEntry(std::io::Error),
+
     #[error("Failed to parse child process output - \"{0}\"")]
     FailedParsingChildOutput(String),
+
+    #[error("Failed to open a file. {0}")]
+    FileOpen(std::io::Error),
+
+    #[error("Failed to read a file. {0}")]
+    FileRead(std::io::Error),
 
     #[error("Failed to build a rayon worker pool. {0}")]
     RayonPoolBuild(#[from] rayon::ThreadPoolBuildError),
@@ -64,4 +94,7 @@ pub enum SystemError {
 pub enum TaskError {
     #[error("Indexing out of bounds. Tried to access index {0}.")]
     IndexingOutOfBounds(usize),
+
+    #[error("Indexing out of bounds. Tried to access range {0}..{1}")]
+    ChunkOutOfBounds(usize, usize),
 }

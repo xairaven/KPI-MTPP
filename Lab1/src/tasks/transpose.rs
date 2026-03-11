@@ -1,4 +1,4 @@
-use crate::errors::{Error, SetupError, SystemError, TaskError, TeardownError};
+use crate::errors::{Error, SystemError, TaskError};
 use crate::task::benchmark::{BenchmarkMetadata, Benchmarkable};
 use crate::task::executor::Executable;
 use crate::task::lifecycle::Manageable;
@@ -72,7 +72,7 @@ impl Reportable for Transpose {
 }
 
 impl Manageable for Transpose {
-    fn setup(&mut self) -> Result<(), SetupError> {
+    fn setup(&mut self) -> Result<(), Error> {
         let total_elements = self.size * self.size;
         let mut data = vec![0u64; total_elements];
 
@@ -87,7 +87,7 @@ impl Manageable for Transpose {
         Ok(())
     }
 
-    fn teardown(&mut self) -> Result<(), TeardownError> {
+    fn teardown(&mut self) -> Result<(), Error> {
         // Clear the input matrix to free memory.
         self.input_matrix.clear();
         Ok(())

@@ -56,6 +56,7 @@ mod task;
 
 mod tasks {
     pub mod factorization;
+    pub mod io;
     pub mod monte_carlo;
     pub mod primes;
     pub mod transpose;

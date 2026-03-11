@@ -1,6 +1,7 @@
 use crate::task::benchmark::BenchmarkMetadata;
 use crate::task::report::Reportable;
 use crate::tasks::factorization::Factorization;
+use crate::tasks::io::WordCount;
 use crate::tasks::monte_carlo::MonteCarlo;
 use crate::tasks::primes::Primes;
 use crate::tasks::transpose::Transpose;
@@ -26,6 +27,8 @@ pub fn tasks() -> Vec<Box<dyn Reportable>> {
         Box::new(Primes::with_range(1..=10_000_000)),
         // Memory-Bound
         Box::new(Transpose::with_size(10_000)),
+        // I/O-Bound
+        Box::new(WordCount::new(1000, 100)),
     ]
 }
 
