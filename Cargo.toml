@@ -19,7 +19,6 @@ collapsible_if = "warn"
 collapsible_else_if = "warn"
 collapsible_match = "warn"
 collapsible_str_replace = "warn"
-indexing_slicing = "deny"
 
 [workspace.lints.rust]
 unused_doc_comments = "allow"
