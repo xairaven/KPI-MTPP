@@ -14,3 +14,4 @@ fn main() {
 mod cli;
 mod errors;
 mod logs;
+mod task;

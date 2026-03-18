@@ -1,10 +1,14 @@
 use crate::cli::CliError;
 use crate::logs::LogError;
+use crate::task::benchmark::BenchmarkError;
 use std::io;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum Error {
+    #[error("Benchmark. {0}")]
+    Benchmark(#[from] BenchmarkError),
+
     #[error("User input. {0}")]
     Cli(#[from] CliError),
 
