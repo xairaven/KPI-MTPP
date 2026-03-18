@@ -1,6 +1,7 @@
 use crate::cli::{CliError, InputArgs};
 use crate::errors::Error;
 use crate::task::report::Reportable;
+use crate::tasks::array::ArrayStats;
 use crate::tasks::html::HtmlTags;
 use thiserror::Error;
 
@@ -11,7 +12,10 @@ pub struct BenchmarkRunner {
 impl Default for BenchmarkRunner {
     fn default() -> Self {
         Self {
-            tasks: vec![Box::new(HtmlTags::with_documents_amount(10_000))],
+            tasks: vec![
+                Box::new(HtmlTags::with_documents_amount(10_000)),
+                Box::new(ArrayStats::with_size(10_000_000)),
+            ],
         }
     }
 }
@@ -41,4 +45,5 @@ pub enum TaskLogicError {
     IndexOutOfBounds(usize),
 }
 
+pub mod array;
 pub mod html;
