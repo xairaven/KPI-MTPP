@@ -1,5 +1,5 @@
 use crate::errors::Error;
-use crate::task::executable::ParallelismMethod;
+use crate::task::executable::RunMode;
 use crate::task::measure::Measurable;
 use std::time::Duration;
 use thiserror::Error;
@@ -12,11 +12,9 @@ pub trait Benchmarkable: Measurable {
 
         // Not benchmarking if there are not supported methods
         for benchmark in &self.benchmarks() {
-            let method = ParallelismMethod::from(benchmark);
-            if !self.supported_methods().contains(&method) {
-                return Err(Error::Benchmark(BenchmarkError::MethodIsNotSupported(
-                    method,
-                )));
+            let mode = RunMode::from(benchmark);
+            if !self.supported_modes().contains(&mode) {
+                return Err(Error::Benchmark(BenchmarkError::MethodIsNotSupported(mode)));
             }
         }
 
@@ -35,6 +33,8 @@ pub trait Benchmarkable: Measurable {
 
 #[derive(Debug, Clone)]
 pub enum BenchmarkKind {
+    Sequential,
+
     MapReduce {
         partitions: usize,
     },
@@ -67,12 +67,13 @@ pub struct BenchmarkResult {
 #[derive(Debug, Error)]
 pub enum BenchmarkError {
     #[error("Method ({0}) is not supported.")]
-    MethodIsNotSupported(ParallelismMethod),
+    MethodIsNotSupported(RunMode),
 }
 
-impl From<&BenchmarkKind> for ParallelismMethod {
+impl From<&BenchmarkKind> for RunMode {
     fn from(kind: &BenchmarkKind) -> Self {
         match kind {
+            BenchmarkKind::Sequential => Self::Sequential,
             BenchmarkKind::MapReduce { .. } => Self::MapReduce,
             BenchmarkKind::ForkJoin { .. } => Self::ForkJoin,
             BenchmarkKind::WorkerPool { .. } => Self::WorkerPool,
@@ -85,6 +86,7 @@ impl From<&BenchmarkKind> for ParallelismMethod {
 impl std::fmt::Display for BenchmarkKind {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let kind = match self {
+            Self::Sequential => String::from("Sequential"),
             Self::MapReduce { partitions } => {
                 format!("Map-Reduce with {} partitions", partitions)
             },
