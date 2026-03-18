@@ -3,6 +3,7 @@ use crate::errors::Error;
 use crate::task::report::Reportable;
 use crate::tasks::array::ArrayStats;
 use crate::tasks::html::HtmlTags;
+use crate::tasks::multiplication::MatrixMultiplication;
 use thiserror::Error;
 
 pub struct BenchmarkRunner {
@@ -15,6 +16,7 @@ impl Default for BenchmarkRunner {
             tasks: vec![
                 Box::new(HtmlTags::with_documents_amount(10_000)),
                 Box::new(ArrayStats::with_size(10_000_000)),
+                Box::new(MatrixMultiplication::with_size(1_000)),
             ],
         }
     }
@@ -47,3 +49,4 @@ pub enum TaskLogicError {
 
 pub mod array;
 pub mod html;
+pub mod multiplication;
