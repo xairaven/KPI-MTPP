@@ -18,6 +18,10 @@ impl Report {
     pub fn add_result(&mut self, result: &BenchmarkResult) {
         self.buffer.add_line(&result.to_string());
     }
+
+    pub fn get_text(&self) -> String {
+        self.buffer.text()
+    }
 }
 
 pub trait Reportable: Benchmarkable {
