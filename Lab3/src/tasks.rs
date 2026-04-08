@@ -1,6 +1,7 @@
 use crate::cli::{CliError, InputArgs};
 use crate::errors::Error;
 use crate::task::report::Reportable;
+use crate::tasks::bank::BankTransfers;
 use thiserror::Error;
 
 pub struct BenchmarkRunner {
@@ -9,7 +10,9 @@ pub struct BenchmarkRunner {
 
 impl Default for BenchmarkRunner {
     fn default() -> Self {
-        Self { tasks: vec![] }
+        Self {
+            tasks: vec![Box::new(BankTransfers::new(150, 5000))],
+        }
     }
 }
 
@@ -36,4 +39,12 @@ impl BenchmarkRunner {
 pub enum TaskLogicError {
     #[error("Index out of bounds: {0}")]
     IndexOutOfBounds(usize),
+
+    #[error("Failed to join thread.")]
+    JoinThreadFailed,
+
+    #[error("Mutex poisoned.")]
+    MutexPoisoned,
 }
+
+pub mod bank;
