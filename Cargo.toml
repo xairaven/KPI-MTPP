@@ -22,4 +22,3 @@ collapsible_str_replace = "warn"
 
 [workspace.lints.rust]
 unused_doc_comments = "allow"
-unsafe_code = "deny"
