@@ -11,6 +11,10 @@ pub enum RunMode {
     RaceCondition,
     Deadlock,
     MutexFixed,
+
+    IpcPipes,
+    IpcSharedMemory,
+    IpcTcp,
 }
 
 impl std::fmt::Display for RunMode {
@@ -19,6 +23,10 @@ impl std::fmt::Display for RunMode {
             Self::RaceCondition => "Race Condition (Lost Updates)",
             Self::Deadlock => "Deadlock (Circular Wait)",
             Self::MutexFixed => "Fixed (Ordered Mutexes)",
+
+            Self::IpcPipes => "IPC: Named Pipes",
+            Self::IpcSharedMemory => "IPC: Shared Memory",
+            Self::IpcTcp => "IPC: TCP Sockets",
         };
 
         write!(f, "{}", method)

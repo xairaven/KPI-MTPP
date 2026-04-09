@@ -36,6 +36,10 @@ pub enum BenchmarkKind {
     RaceCondition,
     Deadlock,
     MutexFixed,
+
+    IpcPipes,
+    IpcSharedMemory,
+    IpcTcp,
 }
 
 pub struct BenchmarkResult {
@@ -55,6 +59,10 @@ impl From<&BenchmarkKind> for RunMode {
             BenchmarkKind::RaceCondition => Self::RaceCondition,
             BenchmarkKind::Deadlock => Self::Deadlock,
             BenchmarkKind::MutexFixed => Self::MutexFixed,
+
+            BenchmarkKind::IpcPipes => Self::IpcPipes,
+            BenchmarkKind::IpcSharedMemory => Self::IpcSharedMemory,
+            BenchmarkKind::IpcTcp => Self::IpcTcp,
         }
     }
 }
@@ -62,9 +70,13 @@ impl From<&BenchmarkKind> for RunMode {
 impl std::fmt::Display for BenchmarkKind {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let kind = match self {
-            Self::RaceCondition => String::from("Race Condition"),
-            Self::Deadlock => String::from("Deadlock"),
-            Self::MutexFixed => String::from("Mutex (Fixed)"),
+            Self::RaceCondition => "Race Condition",
+            Self::Deadlock => "Deadlock",
+            Self::MutexFixed => "Mutex (Fixed)",
+
+            Self::IpcPipes => "IPC: Named Pipes",
+            Self::IpcSharedMemory => "IPC: Shared Memory",
+            Self::IpcTcp => "IPC: TCP Sockets",
         };
 
         write!(f, "{}", kind)

@@ -2,6 +2,8 @@ use crate::cli::{CliError, InputArgs};
 use crate::errors::Error;
 use crate::task::report::Reportable;
 use crate::tasks::bank::Bank;
+use crate::tasks::ipc::InterProcessCommunication;
+use std::io;
 use thiserror::Error;
 
 pub struct BenchmarkRunner {
@@ -11,7 +13,10 @@ pub struct BenchmarkRunner {
 impl Default for BenchmarkRunner {
     fn default() -> Self {
         Self {
-            tasks: vec![Box::new(Bank::new(150))],
+            tasks: vec![
+                Box::new(Bank::new(150)),
+                Box::new(InterProcessCommunication::default()),
+            ],
         }
     }
 }
@@ -42,6 +47,16 @@ pub enum TaskLogicError {
 
     #[error("Mutex poisoned.")]
     MutexPoisoned,
+
+    #[error("Child process status is not success. {0}")]
+    ChildProcessStatus(String),
+
+    #[error("Failed to get answer from process. {0}")]
+    ChildAnswer(io::Error),
+
+    #[error("Failed to convert bytes (from memory) to float. {0}")]
+    FloatFromMemory(core::array::TryFromSliceError),
 }
 
 pub mod bank;
+pub mod ipc;

@@ -24,6 +24,42 @@ pub enum Error {
 
 #[derive(Debug, Error)]
 pub enum SystemError {
+    #[error("Failed to write into the buffer. {0}")]
+    BufferRead(std::io::Error),
+
+    #[error("Failed to write into the buffer. {0}")]
+    BufferWrite(std::io::Error),
+
     #[error("Failed to get current executable path.")]
     CurrentExe(std::io::Error),
+
+    #[error("Failed to create child process. {0}")]
+    ChildProcess(std::io::Error),
+
+    #[error("Failed to open stdin.")]
+    StdIn,
+
+    #[error("Failed to open stdout.")]
+    StdOut,
+
+    #[error("Failed to create shared memory file. {0}")]
+    SharedMemoryFile(std::io::Error),
+
+    #[error("Failed to resize shared memory file. {0}")]
+    SharedMemoryFileLength(std::io::Error),
+
+    #[error("Failed to create shared memory object. {0}")]
+    SharedMemoryFileObject(std::io::Error),
+
+    #[error("Failed to bind socket. {0}")]
+    TcpBind(std::io::Error),
+
+    #[error("Failed to get local address of socket. {0}")]
+    TcpLocalAddr(std::io::Error),
+
+    #[error("Failed to get connection from the child process. {0}")]
+    TcpConnection(std::io::Error),
+
+    #[error("Failed to pass information by pipe. {0}")]
+    Pipe(std::io::Error),
 }
