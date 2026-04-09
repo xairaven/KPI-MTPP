@@ -33,7 +33,6 @@ pub trait Benchmarkable: Measurable {
 
 #[derive(Debug, Clone)]
 pub enum BenchmarkKind {
-    Sequential,
     RaceCondition,
     Deadlock,
     MutexFixed,
@@ -53,7 +52,6 @@ pub enum BenchmarkError {
 impl From<&BenchmarkKind> for RunMode {
     fn from(kind: &BenchmarkKind) -> Self {
         match kind {
-            BenchmarkKind::Sequential => Self::Sequential,
             BenchmarkKind::RaceCondition => Self::RaceCondition,
             BenchmarkKind::Deadlock => Self::Deadlock,
             BenchmarkKind::MutexFixed => Self::MutexFixed,
@@ -64,7 +62,6 @@ impl From<&BenchmarkKind> for RunMode {
 impl std::fmt::Display for BenchmarkKind {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let kind = match self {
-            Self::Sequential => String::from("Sequential"),
             Self::RaceCondition => String::from("Race Condition"),
             Self::Deadlock => String::from("Deadlock"),
             Self::MutexFixed => String::from("Mutex (Fixed)"),

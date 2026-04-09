@@ -37,9 +37,6 @@ impl BenchmarkRunner {
 
 #[derive(Debug, Error)]
 pub enum TaskLogicError {
-    #[error("Index out of bounds: {0}")]
-    IndexOutOfBounds(usize),
-
     #[error("Failed to join thread.")]
     JoinThreadFailed,
 

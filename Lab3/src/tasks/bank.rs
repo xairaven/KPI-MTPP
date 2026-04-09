@@ -121,7 +121,6 @@ impl Executable for Bank {
             BenchmarkKind::RaceCondition => self.run_race_condition()?,
             BenchmarkKind::Deadlock => self.run_deadlock()?,
             BenchmarkKind::MutexFixed => self.run_mutex_fixed()?,
-            _ => {},
         };
 
         // Skip total balance validation for Deadlock because background threads
