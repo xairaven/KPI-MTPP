@@ -1,7 +1,7 @@
 use crate::cli::{CliError, InputArgs};
 use crate::errors::Error;
 use crate::task::report::Reportable;
-use crate::tasks::bank::BankTransfers;
+use crate::tasks::bank::Bank;
 use thiserror::Error;
 
 pub struct BenchmarkRunner {
@@ -11,7 +11,7 @@ pub struct BenchmarkRunner {
 impl Default for BenchmarkRunner {
     fn default() -> Self {
         Self {
-            tasks: vec![Box::new(BankTransfers::new(150, 5000))],
+            tasks: vec![Box::new(Bank::new(150))],
         }
     }
 }

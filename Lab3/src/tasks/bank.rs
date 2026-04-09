@@ -16,19 +16,19 @@ pub struct Account {
 }
 
 #[derive(Debug)]
-pub struct BankTransfers {
+pub struct Bank {
     accounts: Vec<Account>,
     accounts_amount: usize,
-    threads_amount: usize,
     initial_total: i64,
 }
 
-impl BankTransfers {
-    pub fn new(accounts_amount: usize, threads_amount: usize) -> Self {
+const THREAD_AMOUNT: usize = 5000;
+
+impl Bank {
+    pub fn new(accounts_amount: usize) -> Self {
         Self {
             accounts: vec![],
             accounts_amount,
-            threads_amount,
             initial_total: 0,
         }
     }
@@ -47,27 +47,32 @@ impl BankTransfers {
     }
 
     // Generates a deterministic pseudo-random index for transferring
-    fn get_account_indices(&self, iteration: usize) -> (usize, usize) {
-        let from_id = (iteration * 17) % self.accounts_amount;
-        let mut to_id = (iteration * 31) % self.accounts_amount;
+    fn get_account_pair(&self, iteration: usize) -> (Account, Account) {
+        let first_id = (iteration * 17) % self.accounts_amount;
+        let second_id = (iteration * 31) % self.accounts_amount;
 
-        if from_id == to_id {
-            to_id = (to_id + 1) % self.accounts_amount;
-        }
+        let second_id = if first_id == second_id {
+            (second_id + 1) % self.accounts_amount
+        } else {
+            second_id
+        };
 
-        (from_id, to_id)
+        let first_account = self.accounts[first_id].clone();
+        let second_account = self.accounts[second_id].clone();
+
+        (first_account, second_account)
     }
 }
 
-impl Reportable for BankTransfers {
+impl Reportable for Bank {
     fn name(&self) -> &'static str {
         "Bank Transactions"
     }
 }
 
-impl Measurable for BankTransfers {}
+impl Measurable for Bank {}
 
-impl Benchmarkable for BankTransfers {
+impl Benchmarkable for Bank {
     fn benchmarks(&self) -> Vec<BenchmarkKind> {
         vec![
             BenchmarkKind::RaceCondition,
@@ -77,7 +82,7 @@ impl Benchmarkable for BankTransfers {
     }
 }
 
-impl Manageable for BankTransfers {
+impl Manageable for Bank {
     fn setup(&mut self) -> Result<(), Error> {
         self.accounts.clear();
         self.initial_total = 0;
@@ -102,7 +107,7 @@ impl Manageable for BankTransfers {
     }
 }
 
-impl Executable for BankTransfers {
+impl Executable for Bank {
     fn supported_modes(&self) -> Vec<RunMode> {
         vec![
             RunMode::RaceCondition,
@@ -136,27 +141,25 @@ impl Executable for BankTransfers {
     }
 }
 
-impl BankTransfers {
+impl Bank {
     fn run_race_condition(&self) -> Result<(), Error> {
         let mut handles = vec![];
 
-        for i in 0..self.threads_amount {
-            let (from_id, to_id) = self.get_account_indices(i);
-            let account_from = self.accounts[from_id].clone();
-            let account_to = self.accounts[to_id].clone();
-            let amount = 10;
+        for i in 0..THREAD_AMOUNT {
+            let (from, to) = self.get_account_pair(i);
+            let transaction_diff = 10;
 
             handles.push(thread::spawn(move || -> Result<(), TaskLogicError> {
                 // Simulating a data race by dropping the lock between read and write
-                let balance_from = account_from
+                let balance_from = from
                     .balance
                     .lock()
                     .map_err(|_| TaskLogicError::MutexPoisoned)?;
-                if *balance_from >= amount {
+                if *balance_from >= transaction_diff {
                     let old_from = *balance_from;
                     drop(balance_from);
 
-                    let balance_to = account_to
+                    let balance_to = to
                         .balance
                         .lock()
                         .map_err(|_| TaskLogicError::MutexPoisoned)?;
@@ -165,20 +168,22 @@ impl BankTransfers {
 
                     thread::yield_now();
 
-                    *account_from
+                    *from
                         .balance
                         .lock()
-                        .map_err(|_| TaskLogicError::MutexPoisoned)? = old_from - amount;
-                    *account_to
-                        .balance
+                        .map_err(|_| TaskLogicError::MutexPoisoned)? =
+                        old_from - transaction_diff;
+                    *to.balance
                         .lock()
-                        .map_err(|_| TaskLogicError::MutexPoisoned)? = old_to + amount;
+                        .map_err(|_| TaskLogicError::MutexPoisoned)? =
+                        old_to + transaction_diff;
                 }
 
                 Ok(())
             }));
         }
 
+        // If there are errors, return them
         for handle in handles {
             let thread_logic_result = handle
                 .join()
@@ -193,14 +198,13 @@ impl BankTransfers {
         let (tx, rx) = std::sync::mpsc::channel();
 
         let accounts = self.accounts.clone();
-        let threads_amount = self.threads_amount;
         let accounts_amount = self.accounts_amount;
 
         // Executing the deadlock scenario inside an isolated thread to prevent permanent freeze
         thread::spawn(move || -> Result<(), TaskLogicError> {
             let mut handles = vec![];
 
-            for i in 0..threads_amount {
+            for i in 0..THREAD_AMOUNT {
                 let from_id = (i * 17) % accounts_amount;
                 let mut to_id = (i * 31) % accounts_amount;
                 if from_id == to_id {
@@ -253,43 +257,31 @@ impl BankTransfers {
     fn run_mutex_fixed(&self) -> Result<(), Error> {
         let mut handles = vec![];
 
-        for i in 0..self.threads_amount {
-            let (from_id, to_id) = self.get_account_indices(i);
-            let account_from = self.accounts[from_id].clone();
-            let account_to = self.accounts[to_id].clone();
+        for i in 0..THREAD_AMOUNT {
+            let (from, to) = self.get_account_pair(i);
             let amount = 10;
 
             handles.push(thread::spawn(move || -> Result<(), TaskLogicError> {
                 // Global lock ordering avoids circular waits.
                 // We lock the account with the smaller ID first, then the larger ID.
-                if account_from.id < account_to.id {
-                    let mut guard_from = account_from
-                        .balance
-                        .lock()
-                        .map_err(|_| TaskLogicError::MutexPoisoned)?;
-                    let mut guard_to = account_to
-                        .balance
-                        .lock()
-                        .map_err(|_| TaskLogicError::MutexPoisoned)?;
-
-                    if *guard_from >= amount {
-                        *guard_from -= amount;
-                        *guard_to += amount;
-                    }
+                let (from, to) = if from.id < to.id {
+                    (from, to)
                 } else {
-                    let mut guard_to = account_to
-                        .balance
-                        .lock()
-                        .map_err(|_| TaskLogicError::MutexPoisoned)?;
-                    let mut guard_from = account_from
-                        .balance
-                        .lock()
-                        .map_err(|_| TaskLogicError::MutexPoisoned)?;
+                    (to, from)
+                };
 
-                    if *guard_from >= amount {
-                        *guard_from -= amount;
-                        *guard_to += amount;
-                    }
+                let mut guard_from = from
+                    .balance
+                    .lock()
+                    .map_err(|_| TaskLogicError::MutexPoisoned)?;
+                let mut guard_to = to
+                    .balance
+                    .lock()
+                    .map_err(|_| TaskLogicError::MutexPoisoned)?;
+
+                if *guard_from >= amount {
+                    *guard_from -= amount;
+                    *guard_to += amount;
                 }
 
                 Ok(())
