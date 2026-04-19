@@ -4,7 +4,7 @@ version = "0.0.1"
 authors = ["Oleksandr Kovalov <kovalov.o.o.-im51mn@edu.kpi.ua>"]
 
 edition = "2024"
-rust-version = "1.94.1"
+rust-version = "1.95.0"
 
 categories = ["science"]
 
