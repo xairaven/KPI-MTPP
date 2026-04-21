@@ -31,5 +31,6 @@ mod context;
 mod errors;
 mod graphics;
 mod logger;
+mod simulation;
 mod ui;
 mod utils;

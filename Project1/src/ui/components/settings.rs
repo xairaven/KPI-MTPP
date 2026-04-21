@@ -1,5 +1,6 @@
 use crate::context::Context;
 use crate::graphics;
+use crate::graphics::figures::border;
 use eframe::epaint::Color32;
 use egui::{DragValue, Grid, Panel, RichText, ScrollArea};
 
@@ -76,7 +77,59 @@ impl SettingsComponent {
                     ui.add_space(10.0);
                     ui.separator();
                     ui.add_space(10.0);
+
+                    self.simulation_settings(ui, context);
                 });
             });
+    }
+
+    fn simulation_settings(&self, ui: &mut egui::Ui, context: &mut Context) {
+        self.border_settings(ui, context);
+    }
+
+    fn border_settings(&self, ui: &mut egui::Ui, context: &mut Context) {
+        let border = &mut context.simulation.border;
+        let crystal = &mut context.simulation.crystal;
+
+        ui.vertical_centered_justified(|ui| {
+            ui.label("Border Settings");
+        });
+
+        Grid::new("BORDER_RANGE").num_columns(2).show(ui, |ui| {
+            ui.label("Range");
+            ui.end_row();
+
+            ui.label("N:");
+            if ui
+                .add(
+                    DragValue::new(&mut border.n)
+                        .speed(1)
+                        .range(border::BORDER_RANGE),
+                )
+                .changed()
+            {
+                border.resize(crystal);
+            }
+            ui.end_row();
+
+            ui.label("M:");
+            if ui
+                .add(
+                    DragValue::new(&mut border.m)
+                        .speed(1)
+                        .range(border::BORDER_RANGE),
+                )
+                .changed()
+            {
+                border.resize(crystal);
+            }
+            ui.end_row();
+        });
+
+        ui.add_space(10.0);
+
+        if ui.button("Reset").clicked() {
+            border.reset(crystal);
+        }
     }
 }

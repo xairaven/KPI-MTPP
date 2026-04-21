@@ -1,13 +1,16 @@
 use crate::config::Config;
 use crate::graphics::figures::grid::{Grid2D, Grid2DBuilder};
-use crate::graphics::units::Centimeter;
+use crate::graphics::units::{Centimeter, Pixel};
 use crate::graphics::{Viewport, ViewportGeometry, ViewportState, ZeroPointLocation};
+use crate::simulation::Simulation;
 use crate::ui::modals::error::ErrorModal;
 use crate::utils::channel::Channel;
 
 #[derive(Debug)]
 pub struct Context {
     pub config: Config,
+
+    pub simulation: Simulation,
 
     pub figures: FiguresState,
     pub viewport: Viewport,
@@ -19,13 +22,16 @@ impl Context {
     pub fn new(config: Config) -> Self {
         Self {
             config,
+            simulation: Simulation::default(),
             figures: FiguresState::default(),
             viewport: Viewport {
                 // Default settings like panning, zooming, etc.
                 config: Default::default(),
                 // Default geometry settings, can be updated by user
                 geometry: ViewportGeometry {
-                    zero_point_location: ZeroPointLocation::Center,
+                    zero_point_location: ZeroPointLocation::BottomLeftWithOffset {
+                        offset: Pixel(50.0),
+                    },
                     ..Default::default()
                 },
                 // Initial viewport state, will be updated when the UI is built

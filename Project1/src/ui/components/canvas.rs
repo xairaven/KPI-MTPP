@@ -30,9 +30,11 @@ impl CanvasComponent {
         let mut lines = vec![];
 
         let grid: Vec<Line<Point>> = context.figures.grid.lines(&context.viewport);
+        let border: Vec<Line<Point>> = context.simulation.border.lines();
 
         // Conversion to shapes
         lines.extend(grid);
+        lines.extend(border);
 
         lines
             .iter()

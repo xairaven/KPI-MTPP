@@ -28,11 +28,19 @@ where
         )
     }
 
-    pub fn with_transparent(start: T, end: T) -> Self {
+    pub fn with_coordinates(start: T, end: T) -> Self {
         Self {
             start,
             end,
             stroke: Stroke::default(),
+        }
+    }
+
+    pub fn with_stroke(self, stroke: Stroke) -> Self {
+        Self {
+            start: self.start,
+            end: self.end,
+            stroke,
         }
     }
 
