@@ -93,7 +93,7 @@ impl Grid2DBuilder {
     pub fn build(self) -> Grid2D {
         Grid2D {
             is_enabled: true,
-            are_axes_enabled: true,
+            are_axes_enabled: false,
             origin: self.origin,
             unit: self.unit,
             bounds: GridBounds {
