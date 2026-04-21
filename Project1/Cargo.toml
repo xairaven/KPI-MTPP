@@ -18,6 +18,7 @@ workspace = true
 [dependencies]
 chrono = "0.4.44"
 crossbeam = "0.8.4"
+derive_more = { version = "2.1.1", features = ["full"] }
 egui = "0.34.1"
 eframe = { version = "0.34.1", default-features = false, features = [
     "default_fonts",
