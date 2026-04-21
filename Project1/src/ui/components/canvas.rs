@@ -1,5 +1,7 @@
 use crate::context::Context;
-use egui::{CentralPanel, Color32, Frame, Painter, Response, Sense};
+use crate::graphics::primitives::line::Line;
+use crate::graphics::primitives::point::Point;
+use egui::{CentralPanel, Color32, Frame, Painter, Response, Sense, Shape};
 
 #[derive(Debug, Default)]
 pub struct CanvasComponent;
@@ -10,28 +12,49 @@ impl CanvasComponent {
             Frame::canvas(ui.style())
                 .fill(Color32::WHITE)
                 .show(ui, |ui| {
-                    Self::pipeline(ui, context);
+                    ui.input(|i| {
+                        context.viewport.handle_scroll(i);
+                    });
+                    let response = Self::pipeline(ui, context);
+                    context.viewport.handle_pan(ui, response);
                 });
         });
     }
 
     fn pipeline(ui: &mut egui::Ui, context: &mut Context) -> Response {
-        Self::draw(ui, context)
+        let shapes = Self::create_shapes(ui, context);
+        Self::draw(ui, context, shapes)
     }
 
-    fn draw(ui: &mut egui::Ui, context: &mut Context) -> Response {
-        let (response, _painter) = Self::initialize_painter(ui, context);
-        // painter.extend(..);
+    fn create_shapes(_ui: &mut egui::Ui, context: &mut Context) -> Vec<Shape> {
+        let mut lines = vec![];
+
+        let grid: Vec<Line<Point>> = context.figures.grid.lines(&context.viewport);
+
+        // Conversion to shapes
+        lines.extend(grid);
+
+        lines
+            .iter()
+            .map(|line| line.to_pixels(&context.viewport).to_shape())
+            .collect::<Vec<Shape>>()
+    }
+
+    fn draw(ui: &mut egui::Ui, context: &mut Context, shapes: Vec<Shape>) -> Response {
+        let (response, painter) = Self::initialize_painter(ui, context);
+        painter.extend(shapes);
 
         response
     }
 
     fn initialize_painter(
-        ui: &mut egui::Ui, _context: &mut Context,
+        ui: &mut egui::Ui, context: &mut Context,
     ) -> (Response, Painter) {
         let painter_size = ui.available_size_before_wrap();
         let (response, painter) =
             ui.allocate_painter(painter_size, Sense::click_and_drag());
+
+        context.viewport.update_state(&response);
 
         (response, painter)
     }

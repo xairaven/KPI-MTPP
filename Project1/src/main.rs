@@ -29,6 +29,7 @@ fn main() {
 mod config;
 mod context;
 mod errors;
+mod graphics;
 mod logger;
 mod ui;
 mod utils;
