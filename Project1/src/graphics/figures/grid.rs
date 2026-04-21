@@ -163,18 +163,24 @@ impl Grid2D {
     pub fn lines(&self, viewport: &Viewport) -> Vec<Line<Point>> {
         let mut lines = vec![];
 
-        if !self.is_enabled {
-            return lines;
-        }
-
         // Minimum and maximum bounds in centimeters for the viewport, clamped by the grid bounds
         let view_bounds = self.bounds.view_bounds(viewport);
 
-        // Grid itself
-        for x in
-            view_bounds.minimum_x.value() as i32..=view_bounds.maximum_x.value() as i32
-        {
-            if x == self.origin.x.value() as i32 {
+        if self.is_enabled {
+            lines.extend(self.grid(&view_bounds));
+        }
+        if self.are_axes_enabled {
+            lines.extend(self.axes(&view_bounds));
+        }
+
+        lines
+    }
+
+    fn grid(&self, bounds: &ViewGridBounds) -> Vec<Line<Point>> {
+        let mut lines = vec![];
+
+        for x in bounds.minimum_x.value() as i32..=bounds.maximum_x.value() as i32 {
+            if self.are_axes_enabled && x == self.origin.x.value() as i32 {
                 continue;
             }
 
@@ -182,32 +188,30 @@ impl Grid2D {
                 let line = Line {
                     start: Point {
                         x: Centimeter(x as f64),
-                        y: view_bounds.minimum_y,
+                        y: bounds.minimum_y,
                     },
                     end: Point {
                         x: Centimeter(x as f64),
-                        y: view_bounds.maximum_y,
+                        y: bounds.maximum_y,
                     },
                     stroke: self.grid_stroke,
                 };
                 lines.push(line);
             }
         }
-        for y in
-            view_bounds.minimum_y.value() as i32..=view_bounds.maximum_y.value() as i32
-        {
-            if y == self.origin.y.value() as i32 {
+        for y in bounds.minimum_y.value() as i32..=bounds.maximum_y.value() as i32 {
+            if self.are_axes_enabled && y == self.origin.y.value() as i32 {
                 continue;
             }
 
             if y % self.unit.value() as i32 == 0 {
                 let line = Line {
                     start: Point {
-                        x: view_bounds.minimum_x,
+                        x: bounds.minimum_x,
                         y: Centimeter(y as f64),
                     },
                     end: Point {
-                        x: view_bounds.maximum_x,
+                        x: bounds.maximum_x,
                         y: Centimeter(y as f64),
                     },
                     stroke: self.grid_stroke,
@@ -216,19 +220,20 @@ impl Grid2D {
             }
         }
 
-        // If axes are not enabled, we can already return grid
-        if !self.are_axes_enabled {
-            return lines;
-        }
+        lines
+    }
+
+    fn axes(&self, bounds: &ViewGridBounds) -> Vec<Line<Point>> {
+        let mut lines = vec![];
 
         // Axes
         let axis_x = Line {
             start: Point {
-                x: view_bounds.minimum_x,
+                x: bounds.minimum_x,
                 y: self.origin.y,
             },
             end: Point {
-                x: view_bounds.maximum_x,
+                x: bounds.maximum_x,
                 y: self.origin.y,
             },
             stroke: self.axes_strokes.0,
@@ -236,11 +241,11 @@ impl Grid2D {
         let axis_y = Line {
             start: Point {
                 x: self.origin.x,
-                y: view_bounds.minimum_y,
+                y: bounds.minimum_y,
             },
             end: Point {
                 x: self.origin.x,
-                y: view_bounds.maximum_y,
+                y: bounds.maximum_y,
             },
             stroke: self.axes_strokes.1,
         };
