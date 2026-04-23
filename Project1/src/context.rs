@@ -1,8 +1,8 @@
 use crate::config::Config;
+use crate::graphics::figures::border::Border;
 use crate::graphics::figures::grid::{Grid2D, Grid2DBuilder};
 use crate::graphics::units::{Centimeter, Pixel};
 use crate::graphics::{Viewport, ViewportGeometry, ViewportState, ZeroPointLocation};
-use crate::simulation::Simulation;
 use crate::ui::modals::error::ErrorModal;
 use crate::utils::channel::Channel;
 
@@ -10,9 +10,7 @@ use crate::utils::channel::Channel;
 pub struct Context {
     pub config: Config,
 
-    pub simulation: Simulation,
-
-    pub figures: FiguresState,
+    pub ui_state: UiState,
     pub viewport: Viewport,
 
     pub error_modals: Channel<ErrorModal>,
@@ -22,8 +20,7 @@ impl Context {
     pub fn new(config: Config) -> Self {
         Self {
             config,
-            simulation: Simulation::default(),
-            figures: FiguresState::default(),
+            ui_state: Default::default(),
             viewport: Viewport {
                 // Default settings like panning, zooming, etc.
                 config: Default::default(),
@@ -48,14 +45,16 @@ impl Context {
 }
 
 #[derive(Debug)]
-pub struct FiguresState {
+pub struct UiState {
     pub grid: Grid2D,
+    pub border: Border,
 }
 
-impl Default for FiguresState {
+impl Default for UiState {
     fn default() -> Self {
         Self {
             grid: Grid2DBuilder::default().with_unit(Centimeter(1.0)).build(),
+            border: Default::default(),
         }
     }
 }

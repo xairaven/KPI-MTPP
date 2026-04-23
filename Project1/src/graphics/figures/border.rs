@@ -1,6 +1,5 @@
 use crate::graphics::primitives::line::Line;
 use crate::graphics::primitives::point::Point;
-use crate::simulation::crystal::Crystal;
 use egui::{Color32, Stroke};
 use std::ops::RangeInclusive;
 
@@ -10,6 +9,7 @@ pub struct Border {
     pub m: usize,
 
     stroke: Stroke,
+    updated: bool,
 }
 
 pub const BORDER_RANGE: RangeInclusive<usize> = 5..=100;
@@ -21,6 +21,7 @@ impl Default for Border {
             m: 10,
 
             stroke: Stroke::new(2.0, Color32::BLACK),
+            updated: false,
         }
     }
 }
@@ -47,10 +48,18 @@ impl Border {
         ]
     }
 
-    pub fn resize(&self, crystal: &mut Crystal) {}
+    pub fn set_updated(&mut self) {
+        self.updated = true;
+    }
 
-    pub fn reset(&mut self, crystal: &mut Crystal) {
+    pub fn notify_when_updated(&mut self) -> bool {
+        let updated = self.updated;
+        self.updated = false;
+
+        updated
+    }
+
+    pub fn reset(&mut self) {
         *self = Self::default();
-        self.resize(crystal);
     }
 }

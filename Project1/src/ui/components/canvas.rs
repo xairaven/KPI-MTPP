@@ -29,8 +29,8 @@ impl CanvasComponent {
     fn create_shapes(_ui: &mut egui::Ui, context: &mut Context) -> Vec<Shape> {
         let mut lines = vec![];
 
-        let grid: Vec<Line<Point>> = context.figures.grid.lines(&context.viewport);
-        let border: Vec<Line<Point>> = context.simulation.border.lines();
+        let grid: Vec<Line<Point>> = context.ui_state.grid.lines(&context.viewport);
+        let border: Vec<Line<Point>> = context.ui_state.border.lines();
 
         // Conversion to shapes
         lines.extend(grid);
