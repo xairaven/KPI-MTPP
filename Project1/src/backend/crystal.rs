@@ -1,31 +1,45 @@
-use crate::backend::field::Field;
+use std::sync::atomic::AtomicUsize;
 use std::sync::{Arc, RwLock};
 
 #[derive(Debug)]
 pub struct Crystal {
-    vec: Vec<Arc<RwLock<Atom>>>,
-    field: Field,
+    atoms: Vec<Arc<RwLock<Atom>>>,
+    field: Vec<AtomicUsize>,
+
+    size: CrystalSize,
 }
 
 impl Crystal {
-    pub fn new(field: Field) -> Self {
-        let x = field.width / 2;
-        let y = field.height / 2;
+    pub fn new(atoms_amount: usize, size: CrystalSize) -> Self {
+        let initial_x = size.width / 2;
+        let initial_y = size.height / 2;
 
-        Self {
-            field,
-            vec: (0..(x * y))
-                .map(|_| Arc::new(RwLock::new(Atom { x, y })))
-                .collect(),
-        }
+        let atoms = (0..atoms_amount)
+            .map(|_| {
+                Arc::new(RwLock::new(Atom {
+                    x: initial_x,
+                    y: initial_y,
+                }))
+            })
+            .collect();
+
+        let field = (0..size.width * size.height)
+            .map(|_| AtomicUsize::new(0))
+            .collect();
+
+        Self { atoms, field, size }
     }
+}
 
-    pub fn index(&self, x: usize, y: usize) -> Option<&Arc<RwLock<Atom>>> {
-        self.vec.get(self.field.width * y + x)
-    }
-
-    pub fn clear(&mut self) {
-        self.vec.clear();
+impl Default for Crystal {
+    fn default() -> Self {
+        Crystal::new(
+            50,
+            CrystalSize {
+                width: 10,
+                height: 10,
+            },
+        )
     }
 }
 
@@ -33,4 +47,18 @@ impl Crystal {
 pub struct Atom {
     pub x: usize,
     pub y: usize,
+}
+
+#[derive(Debug, Clone)]
+pub struct AtomMovementProbability {
+    pub up: f64,
+    pub down: f64,
+    pub left: f64,
+    pub right: f64,
+}
+
+#[derive(Debug, Clone)]
+pub struct CrystalSize {
+    pub width: usize,
+    pub height: usize,
 }

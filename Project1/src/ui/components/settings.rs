@@ -34,9 +34,27 @@ impl SettingsComponent {
 
                     self.separator(ui);
 
+                    self.performance(ui, context);
+
+                    self.separator(ui);
+
                     self.ui_settings(ui, context);
                 });
             });
+    }
+
+    fn performance(&self, ui: &mut egui::Ui, context: &mut Context) {
+        ui.vertical_centered_justified(|ui| {
+            self.header(ui, "System Performance");
+        });
+
+        let metrics = &context.performance_monitor.current_metrics;
+
+        ui.label(format!("CPU: {:.1}%", metrics.global_cpu_usage));
+        ui.label(format!(
+            "RAM: {:.0} / {:.0} MB",
+            metrics.memory_used_mb, metrics.memory_total_mb
+        ));
     }
 
     fn ui_settings(&self, ui: &mut egui::Ui, context: &mut Context) {
@@ -47,9 +65,7 @@ impl SettingsComponent {
         ui.horizontal(|ui| {
             ui.label("Pixels on Centimeter:");
             ui.add(
-                DragValue::new(
-                    &mut context.viewport.geometry.pixels_per_centimeter,
-                )
+                DragValue::new(&mut context.viewport.geometry.pixels_per_centimeter)
                     .speed(1)
                     .range(graphics::PX_PER_CM_RANGE),
             );
@@ -61,16 +77,11 @@ impl SettingsComponent {
             });
         });
 
-        Grid::new("UI_GRID_SETTINGS")
-            .num_columns(2)
-            .show(ui, |ui| {
-                ui.checkbox(&mut context.ui_state.grid.is_enabled, "Grid;");
-                ui.checkbox(
-                    &mut context.ui_state.grid.are_axes_enabled,
-                    "Axes;",
-                );
-                ui.end_row();
-            });
+        Grid::new("UI_GRID_SETTINGS").num_columns(2).show(ui, |ui| {
+            ui.checkbox(&mut context.ui_state.grid.is_enabled, "Grid;");
+            ui.checkbox(&mut context.ui_state.grid.are_axes_enabled, "Axes;");
+            ui.end_row();
+        });
 
         Grid::new("PAN_ZOOM_SETTINGS")
             .num_columns(2)

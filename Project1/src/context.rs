@@ -1,3 +1,4 @@
+use crate::backend::performance::PerformanceMonitor;
 use crate::config::Config;
 use crate::graphics::figures::border::Border;
 use crate::graphics::figures::grid::{Grid2D, Grid2DBuilder};
@@ -11,6 +12,7 @@ pub struct Context {
     pub config: Config,
 
     pub ui_state: UiState,
+    pub performance_monitor: PerformanceMonitor,
     pub viewport: Viewport,
 
     pub error_modals: Channel<ErrorModal>,
@@ -21,6 +23,7 @@ impl Context {
         Self {
             config,
             ui_state: Default::default(),
+            performance_monitor: PerformanceMonitor::new(),
             viewport: Viewport {
                 // Default settings like panning, zooming, etc.
                 config: Default::default(),
