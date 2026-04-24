@@ -50,11 +50,24 @@ impl SettingsComponent {
 
         let metrics = &context.performance_monitor.current_metrics;
 
-        ui.label(format!("CPU: {:.1}%", metrics.global_cpu_usage));
+        ui.label(format!(
+            "CPU Global Usage: {:.1}%",
+            metrics.global_cpu_usage
+        ));
         ui.label(format!(
             "RAM: {:.0} / {:.0} MB",
             metrics.memory_used_mb, metrics.memory_total_mb
         ));
+
+        ui.collapsing("CPUs Info", |ui| {
+            Grid::new("CPUs").num_columns(2).show(ui, |ui| {
+                for unit in &metrics.cpus_info {
+                    ui.label(&unit.name);
+                    ui.label(format!("{:.1}%", unit.usage));
+                    ui.end_row();
+                }
+            })
+        });
     }
 
     fn ui_settings(&self, ui: &mut egui::Ui, context: &mut Context) {
