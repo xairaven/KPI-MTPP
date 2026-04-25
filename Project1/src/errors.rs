@@ -1,3 +1,4 @@
+use crate::backend::simulation::SimulationError;
 use crate::config::ConfigError;
 use crate::logger::LoggerError;
 use crate::ui::GraphicsBackendError;
@@ -13,4 +14,7 @@ pub enum ProjectError {
 
     #[error("Logger. {0}")]
     Logger(#[from] LoggerError),
+
+    #[error("Simulation. {0}")]
+    Simulation(#[from] SimulationError),
 }

@@ -1,3 +1,5 @@
+use crate::backend::commands::UiCommand;
+use crate::backend::engine::Engine;
 use crate::backend::performance::PerformanceMonitor;
 use crate::config::Config;
 use crate::graphics::figures::border::Border;
@@ -9,21 +11,31 @@ use crate::utils::channel::Channel;
 
 #[derive(Debug)]
 pub struct Context {
-    pub config: Config,
+    pub engine: Engine,
 
     pub ui_state: UiState,
     pub performance_monitor: PerformanceMonitor,
+
     pub viewport: Viewport,
 
+    pub config: Config,
+
+    pub commands_channel: Channel<UiCommand>,
     pub error_modals: Channel<ErrorModal>,
 }
 
 impl Context {
     pub fn new(config: Config) -> Self {
+        let commands: Channel<UiCommand> = Default::default();
+        let errors: Channel<ErrorModal> = Default::default();
+        let engine = Engine::new(commands.clone(), errors.clone());
+
         Self {
-            config,
+            engine,
+
             ui_state: Default::default(),
             performance_monitor: PerformanceMonitor::new(),
+
             viewport: Viewport {
                 // Default settings like panning, zooming, etc.
                 config: Default::default(),
@@ -38,7 +50,10 @@ impl Context {
                 state: ViewportState::default(),
             },
 
-            error_modals: Default::default(),
+            config,
+
+            commands_channel: commands,
+            error_modals: errors,
         }
     }
 

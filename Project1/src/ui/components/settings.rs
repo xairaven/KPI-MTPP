@@ -1,3 +1,4 @@
+use crate::backend::commands::UiCommand::ParameterUpdated;
 use crate::context::Context;
 use crate::graphics;
 use crate::graphics::figures::border;
@@ -122,6 +123,7 @@ impl SettingsComponent {
         self.header(ui, "Border");
 
         let border = &mut context.ui_state.border;
+        let commands_channel = &context.commands_channel;
 
         Grid::new("BORDER_RANGE").num_columns(4).show(ui, |ui| {
             ui.label("Range");
@@ -136,7 +138,7 @@ impl SettingsComponent {
                 )
                 .changed()
             {
-                border.set_updated();
+                commands_channel.try_send(ParameterUpdated);
             }
 
             ui.label("N:");
@@ -148,7 +150,7 @@ impl SettingsComponent {
                 )
                 .changed()
             {
-                border.set_updated();
+                commands_channel.try_send(ParameterUpdated);
             }
             ui.end_row();
         });
@@ -158,6 +160,7 @@ impl SettingsComponent {
         ui.vertical_centered_justified(|ui| {
             if ui.button("Reset").clicked() {
                 border.reset();
+                commands_channel.try_send(ParameterUpdated);
             }
         });
     }

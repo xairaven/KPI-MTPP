@@ -9,7 +9,6 @@ pub struct Border {
     pub m: usize,
 
     stroke: Stroke,
-    updated: bool,
 }
 
 pub const BORDER_RANGE: RangeInclusive<usize> = 5..=100;
@@ -21,7 +20,6 @@ impl Default for Border {
             m: 10,
 
             stroke: Stroke::new(2.0, Color32::BLACK),
-            updated: false,
         }
     }
 }
@@ -46,17 +44,6 @@ impl Border {
             )
             .with_stroke(s),
         ]
-    }
-
-    pub fn set_updated(&mut self) {
-        self.updated = true;
-    }
-
-    pub fn notify_when_updated(&mut self) -> bool {
-        let updated = self.updated;
-        self.updated = false;
-
-        updated
     }
 
     pub fn reset(&mut self) {

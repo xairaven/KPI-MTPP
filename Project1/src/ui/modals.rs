@@ -34,7 +34,7 @@ impl ModalsHandler {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ModalFields {
     pub id: egui::Id,
     pub title: String,

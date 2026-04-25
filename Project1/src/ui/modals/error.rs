@@ -3,7 +3,7 @@ use crate::errors::ProjectError;
 use crate::ui::modals::{Modal, ModalFields};
 use egui::{RichText, WidgetText};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ErrorModal {
     modal_fields: ModalFields,
     message: WidgetText,

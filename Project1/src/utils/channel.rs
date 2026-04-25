@@ -1,6 +1,6 @@
 use crossbeam::channel::{Receiver, Sender, TryRecvError};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Channel<T> {
     pub tx: Sender<T>,
     pub rx: Receiver<T>,

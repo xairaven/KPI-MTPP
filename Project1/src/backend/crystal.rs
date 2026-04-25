@@ -3,10 +3,10 @@ use std::sync::{Arc, RwLock};
 
 #[derive(Debug)]
 pub struct Crystal {
-    atoms: Vec<Arc<RwLock<Atom>>>,
-    field: Vec<AtomicUsize>,
+    pub atoms: Vec<Arc<RwLock<Atom>>>,
+    pub field: Vec<AtomicUsize>,
 
-    size: CrystalSize,
+    pub size: CrystalSize,
 }
 
 impl Crystal {
@@ -43,7 +43,7 @@ impl Default for Crystal {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Atom {
     pub x: usize,
     pub y: usize,
