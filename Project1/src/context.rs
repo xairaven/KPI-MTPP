@@ -20,8 +20,6 @@ pub struct Context {
     pub config: Config,
 
     pub ui_commands_tx: Sender<UiCommand>,
-    pub ui_commands_rx: Receiver<UiCommand>,
-    pub engine_event_tx: Sender<EngineEvent>,
     pub engine_event_rx: Receiver<EngineEvent>,
     pub error_modals_tx: Sender<ErrorModal>,
     pub error_modals_rx: Receiver<ErrorModal>,
@@ -33,11 +31,8 @@ impl Context {
         let (engine_event_tx, engine_event_rx) = crossbeam::channel::unbounded();
         let (error_modals_tx, error_modals_rx) = crossbeam::channel::unbounded();
 
-        let mut engine = Engine::new(
-            ui_commands_rx.clone(),
-            engine_event_tx.clone(),
-            error_modals_tx.clone(),
-        );
+        let mut engine =
+            Engine::new(ui_commands_rx, engine_event_tx, error_modals_tx.clone());
         std::thread::spawn(move || {
             engine.run();
         });
@@ -65,8 +60,6 @@ impl Context {
             config,
 
             ui_commands_tx,
-            ui_commands_rx,
-            engine_event_tx,
             engine_event_rx,
             error_modals_tx,
             error_modals_rx,
