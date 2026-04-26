@@ -19,6 +19,7 @@ impl Simulation {
 pub struct SimulationSettings {
     pub atoms_amount: usize,
     pub time_seconds: usize,
+    pub delay_ms: usize,
     pub sampling_times: f64,
     pub seed: Option<u64>,
     pub atom_movement_probability: AtomMovementProbability,

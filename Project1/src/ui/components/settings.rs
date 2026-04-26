@@ -159,6 +159,23 @@ impl SettingsComponent {
                     .show(ui);
                 ui.end_row();
 
+                ui.label("Sampling Times:");
+                DragValueNotifiable::new(&mut settings.sampling_times)
+                    .speed(0.1)
+                    .range(simulation::ranges::SAMPLING)
+                    .suffix(" sec.")
+                    .channel(commands_channel.clone())
+                    .show(ui);
+                ui.end_row();
+
+                ui.label("Delay in drawing:");
+                DragValueNotifiable::new(&mut settings.delay_ms)
+                    .speed(1)
+                    .suffix(" ms.")
+                    .channel(commands_channel.clone())
+                    .show(ui);
+                ui.end_row();
+
                 ui.label("Seed Enabled:");
                 ui.checkbox(&mut settings.is_seed_enabled, "");
                 ui.end_row();
@@ -174,6 +191,22 @@ impl SettingsComponent {
                 settings.generate_seed();
             }
         });
+
+        ui.horizontal(|ui| {
+            ui.label("Time:");
+            DragValueNotifiable::new(&mut settings.time_minutes)
+                .speed(1)
+                .range(simulation::ranges::TIME)
+                .channel(commands_channel.clone())
+                .show(ui);
+            ui.label(":");
+            DragValueNotifiable::new(&mut settings.time_seconds)
+                .speed(1)
+                .range(simulation::ranges::TIME)
+                .channel(commands_channel.clone())
+                .show(ui);
+        });
+
         ui.add_space(5.0);
 
         ui.vertical_centered_justified(|ui| {
