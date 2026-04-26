@@ -14,6 +14,21 @@ pub struct SimulationSettingsUi {
     pub border_height: usize,
 }
 
+impl SimulationSettingsUi {
+    pub fn probabilities_sum(&self) -> f64 {
+        self.probability_up
+            + self.probability_down
+            + self.probability_left
+            + self.probability_right
+    }
+
+    pub fn are_probabilities_valid(&self) -> bool {
+        let sum = self.probabilities_sum();
+
+        sum.is_sign_positive() && sum <= 1.0
+    }
+}
+
 impl Default for SimulationSettingsUi {
     fn default() -> Self {
         Self {

@@ -152,6 +152,56 @@ impl SettingsComponent {
                     .show(ui);
                 ui.end_row();
             });
+        ui.add_space(5.0);
+
+        ui.vertical_centered_justified(|ui| {
+            ui.label("Atom Movement Probabilities");
+        });
+        ui.add_space(5.0);
+        Grid::new("AtomProbabilities")
+            .num_columns(2)
+            .show(ui, |ui| {
+                ui.label("Up:");
+                DragValueNotifiable::new(&mut settings.probability_up)
+                    .speed(0.01)
+                    .range(simulation::ranges::MOVEMENT_PROBABILITY)
+                    .channel(commands_channel.clone())
+                    .show(ui);
+                ui.end_row();
+
+                ui.label("Left:");
+                DragValueNotifiable::new(&mut settings.probability_left)
+                    .speed(0.01)
+                    .range(simulation::ranges::MOVEMENT_PROBABILITY)
+                    .channel(commands_channel.clone())
+                    .show(ui);
+                ui.end_row();
+
+                ui.label("Right:");
+                DragValueNotifiable::new(&mut settings.probability_right)
+                    .speed(0.01)
+                    .range(simulation::ranges::MOVEMENT_PROBABILITY)
+                    .channel(commands_channel.clone())
+                    .show(ui);
+                ui.end_row();
+
+                ui.label("Down:");
+                DragValueNotifiable::new(&mut settings.probability_down)
+                    .speed(0.01)
+                    .range(simulation::ranges::MOVEMENT_PROBABILITY)
+                    .channel(commands_channel.clone())
+                    .show(ui);
+                ui.end_row();
+            });
+
+        if !settings.are_probabilities_valid() {
+            ui.add_space(5.0);
+            ui.vertical_centered_justified(|ui| {
+                ui.label(
+                    RichText::new("Probabilities must sum up to 1.").color(Color32::RED),
+                );
+            });
+        }
     }
 
     fn separator(&self, ui: &mut egui::Ui) {
