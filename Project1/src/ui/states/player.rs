@@ -22,27 +22,22 @@ impl Player {
     }
 
     pub fn start(&mut self, settings: SimulationSettings) {
-        match self.view_mode {
-            ViewMode::RealTime => {
-                self.is_running = true;
-                self.start_time = Some(Instant::now());
-                self.channel.try_send(UiCommand::StartSimulation(settings));
-            },
-            ViewMode::Snapshot => {
-                todo!()
-            },
+        if self.view_mode == ViewMode::Snapshot {
+            return;
         }
+
+        self.is_running = true;
+        self.start_time = Some(Instant::now());
+        self.channel.try_send(UiCommand::StartSimulation(settings));
     }
 
     pub fn stop(&mut self) {
-        match self.view_mode {
-            ViewMode::RealTime => {
-                self.is_running = false;
-                self.start_time = None;
-                self.channel.try_send(UiCommand::StopSimulation);
-            },
-            ViewMode::Snapshot => {},
+        if self.view_mode == ViewMode::Snapshot {
+            return;
         }
+        self.is_running = false;
+        self.start_time = None;
+        self.channel.try_send(UiCommand::StopSimulation);
     }
 
     pub fn time(&self) -> String {

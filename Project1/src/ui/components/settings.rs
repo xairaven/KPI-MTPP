@@ -4,7 +4,7 @@ use crate::graphics;
 use crate::ui::controls::drag_value::DragValueNotifiable;
 use crate::ui::states::player::ViewMode;
 use eframe::epaint::Color32;
-use egui::{DragValue, Grid, Panel, RichText, ScrollArea};
+use egui::{DragValue, Grid, Panel, RichText, ScrollArea, TextEdit};
 
 #[derive(Debug)]
 pub struct SettingsComponent {
@@ -156,7 +156,22 @@ impl SettingsComponent {
                     .channel(commands_channel.clone())
                     .show(ui);
                 ui.end_row();
+
+                ui.label("Seed Enabled:");
+                ui.checkbox(&mut settings.is_seed_enabled, "");
+                ui.end_row();
+
+                if settings.is_seed_enabled {
+                    ui.label("Seed:");
+                    ui.add(TextEdit::singleline(&mut settings.seed).desired_width(100.0));
+                    ui.end_row();
+                }
             });
+        ui.vertical_centered_justified(|ui| {
+            if settings.is_seed_enabled && ui.button("Generate Seed").clicked() {
+                settings.generate_seed();
+            }
+        });
         ui.add_space(5.0);
 
         ui.vertical_centered_justified(|ui| {

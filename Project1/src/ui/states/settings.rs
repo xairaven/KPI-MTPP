@@ -1,5 +1,6 @@
 use crate::backend::crystal::{AtomMovementProbability, CrystalSize};
 use crate::backend::simulation::SimulationSettings;
+use rand::RngExt;
 
 #[derive(Debug, Clone)]
 pub struct SimulationSettingsUi {
@@ -12,6 +13,9 @@ pub struct SimulationSettingsUi {
     pub probability_down: f64,
     pub probability_left: f64,
     pub probability_right: f64,
+
+    pub is_seed_enabled: bool,
+    pub seed: String,
 
     pub border_width: usize,
     pub border_height: usize,
@@ -30,6 +34,11 @@ impl SimulationSettingsUi {
 
         sum.is_sign_positive() && sum <= 1.0
     }
+
+    pub fn generate_seed(&mut self) {
+        let mut rng = rand::rng();
+        self.seed = rng.random_range(0..usize::MAX).to_string();
+    }
 }
 
 impl Default for SimulationSettingsUi {
@@ -44,6 +53,9 @@ impl Default for SimulationSettingsUi {
             probability_down: 0.0,
             probability_left: 0.0,
             probability_right: 0.0,
+
+            is_seed_enabled: false,
+            seed: String::from("0"),
 
             border_width: 10,
             border_height: 10,
