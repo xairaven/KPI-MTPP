@@ -1,23 +1,34 @@
+use std::collections::VecDeque;
+
 #[derive(Debug, Default)]
 pub struct SnapshotStorage {
-    buffer: Vec<CrystalSnapshot>,
-    pub current: Option<usize>,
+    real_time_snaps: VecDeque<CrystalSnapshot>,
+    user_snaps: Vec<CrystalSnapshot>,
+    current: Option<usize>,
 }
 
 impl SnapshotStorage {
-    pub fn add(&mut self, crystal: CrystalSnapshot) {
-        self.buffer.push(crystal);
+    pub fn last_realtime(&mut self) -> Option<CrystalSnapshot> {
+        let result = self.real_time_snaps.pop_back();
+
+        self.real_time_snaps.clear();
+
+        result
     }
 
-    pub fn current(&self) -> Option<&CrystalSnapshot> {
+    pub fn add_user_snapshot(&mut self, crystal: CrystalSnapshot) {
+        self.user_snaps.push(crystal);
+    }
+
+    pub fn current_user_snapshot(&self) -> Option<&CrystalSnapshot> {
         let current = self.current?;
 
-        self.buffer.get(current)
+        self.user_snaps.get(current)
     }
 
-    pub fn clear(&mut self) {
+    pub fn clear_user_snapshots(&mut self) {
         self.current = None;
-        self.buffer.clear();
+        self.user_snaps.clear();
     }
 }
 
