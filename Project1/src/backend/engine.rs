@@ -3,7 +3,7 @@ use crate::backend::simulation::Simulation;
 use crate::backend::snapshot::CrystalSnapshot;
 use crate::ui::modals::error::ErrorModal;
 use crossbeam::channel::{Receiver, Sender};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 #[derive(Debug)]
 pub struct Engine {
@@ -29,7 +29,7 @@ impl Engine {
 
     pub fn run(&mut self) {
         let mut is_running = false;
-        let mut current_snapshot_id = 0;
+        let mut last_snapshot_taken_at: Option<Instant> = None;
 
         loop {
             while let Ok(command) = self.ui_commands_rx.try_recv() {
@@ -37,16 +37,24 @@ impl Engine {
                     UiCommand::StartSimulation(settings) => {
                         self.simulation = Some(Simulation::new(settings));
                         is_running = true;
-                        current_snapshot_id = 0;
+                        last_snapshot_taken_at = None;
                     },
                     UiCommand::StopSimulation | UiCommand::ParameterUpdated => {
                         is_running = false;
-                        current_snapshot_id = 0;
+                        last_snapshot_taken_at = None;
                     },
                 }
             }
 
             if is_running && let Some(simulation) = &mut self.simulation {
+                if simulation.start_time.elapsed().as_secs_f64()
+                    >= simulation.settings.time_seconds as f64
+                {
+                    is_running = false;
+                    let _ = self.events_tx.send(EngineEvent::SimulationFinished);
+                    continue;
+                }
+
                 // TODO: Tick
 
                 // Delay
@@ -57,20 +65,25 @@ impl Engine {
                 }
 
                 // Sampling
-                let elapsed = simulation.start_time.elapsed().as_secs();
-                if elapsed as f64 / simulation.settings.sampling_period_seconds
-                    > current_snapshot_id as f64
-                {
-                    let snapshot_data = simulation
-                        .crystal
-                        .field
-                        .iter()
-                        .map(|c| c.load(std::sync::atomic::Ordering::Relaxed))
-                        .collect();
+                match last_snapshot_taken_at {
+                    Some(time)
+                        if time.elapsed().as_secs_f64()
+                            < simulation.settings.sampling_period_seconds =>
+                    {
+                        // Pass
+                    },
+                    _ => {
+                        let snapshot_data = simulation
+                            .crystal
+                            .field
+                            .iter()
+                            .map(|c| c.load(std::sync::atomic::Ordering::Relaxed))
+                            .collect();
 
-                    let snapshot = CrystalSnapshot::new(snapshot_data);
-                    let _ = self.events_tx.send(EngineEvent::Snapshot(snapshot));
-                    current_snapshot_id += 1;
+                        let snapshot = CrystalSnapshot::new(snapshot_data);
+                        let _ = self.events_tx.send(EngineEvent::Snapshot(snapshot));
+                        last_snapshot_taken_at = Some(Instant::now());
+                    },
                 }
             } else {
                 // If thread is on pause, it should sleep to avoid 100% CPU usage
