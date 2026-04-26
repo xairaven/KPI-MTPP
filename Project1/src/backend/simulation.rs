@@ -20,6 +20,7 @@ pub struct SimulationSettings {
     pub atoms_amount: usize,
     pub time_seconds: usize,
     pub sampling_times: f64,
+    pub seed: Option<u64>,
     pub atom_movement_probability: AtomMovementProbability,
     pub crystal_size: CrystalSize,
 }
@@ -38,4 +39,12 @@ pub mod ranges {
 pub enum SimulationError {
     #[error("Mutex Poisoned.")]
     MutexPoisoned,
+
+    #[error(
+        "Probabilities must be non-negative and their sum must be less than or equal to 1."
+    )]
+    BadProbabilities,
+
+    #[error("Seed must be a positive number. {0}")]
+    BadSeed(std::num::ParseIntError),
 }

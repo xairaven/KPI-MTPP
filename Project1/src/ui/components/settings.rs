@@ -1,7 +1,9 @@
 use crate::backend::simulation;
+use crate::backend::simulation::{SimulationError, SimulationSettings};
 use crate::context::Context;
 use crate::graphics;
 use crate::ui::controls::drag_value::DragValueNotifiable;
+use crate::ui::modals::error::ErrorModal;
 use crate::ui::states::player::ViewMode;
 use eframe::epaint::Color32;
 use egui::{DragValue, Grid, Panel, RichText, ScrollArea, TextEdit};
@@ -272,7 +274,14 @@ impl SettingsComponent {
             },
             false => {
                 if ui.button("Start").clicked() {
-                    player.start(settings.clone().into());
+                    let settings: Result<SimulationSettings, SimulationError> =
+                        settings.clone().try_into();
+                    match settings {
+                        Ok(settings) => player.start(settings.clone()),
+                        Err(err) => {
+                            context.error_modals.try_send(ErrorModal::new(err.into()))
+                        },
+                    }
                 }
             },
         });

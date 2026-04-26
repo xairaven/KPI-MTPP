@@ -1,5 +1,5 @@
 use crate::backend::crystal::{AtomMovementProbability, CrystalSize};
-use crate::backend::simulation::SimulationSettings;
+use crate::backend::simulation::{SimulationError, SimulationSettings};
 use rand::RngExt;
 
 #[derive(Debug, Clone)]
@@ -63,12 +63,25 @@ impl Default for SimulationSettingsUi {
     }
 }
 
-impl From<SimulationSettingsUi> for SimulationSettings {
-    fn from(value: SimulationSettingsUi) -> Self {
-        Self {
+impl TryFrom<SimulationSettingsUi> for SimulationSettings {
+    type Error = SimulationError;
+
+    fn try_from(value: SimulationSettingsUi) -> Result<Self, Self::Error> {
+        if !value.are_probabilities_valid() {
+            return Err(SimulationError::BadProbabilities);
+        }
+        let seed = if value.is_seed_enabled {
+            let seed: u64 = value.seed.parse().map_err(SimulationError::BadSeed)?;
+            Some(seed)
+        } else {
+            None
+        };
+
+        Ok(Self {
             atoms_amount: value.atoms_amount,
             time_seconds: value.time_minutes * 60 + value.time_seconds,
             sampling_times: value.sampling_times,
+            seed,
             atom_movement_probability: AtomMovementProbability {
                 up: value.probability_up,
                 down: value.probability_down,
@@ -79,6 +92,6 @@ impl From<SimulationSettingsUi> for SimulationSettings {
                 width: value.border_width,
                 height: value.border_height,
             },
-        }
+        })
     }
 }
