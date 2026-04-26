@@ -8,7 +8,7 @@ pub struct SimulationSettingsUi {
     pub time_minutes: usize,
     pub time_seconds: usize,
     pub delay_ms: usize,
-    pub sampling_times: f64,
+    pub sampling_period_seconds: f64,
 
     pub probability_up: f64,
     pub probability_down: f64,
@@ -49,7 +49,7 @@ impl Default for SimulationSettingsUi {
             time_minutes: 0,
             time_seconds: 0,
             delay_ms: 0,
-            sampling_times: 0.1,
+            sampling_period_seconds: 1.0,
 
             probability_up: 0.0,
             probability_down: 0.0,
@@ -82,7 +82,7 @@ impl TryFrom<SimulationSettingsUi> for SimulationSettings {
         Ok(Self {
             atoms_amount: value.atoms_amount,
             time_seconds: value.time_minutes * 60 + value.time_seconds,
-            sampling_times: value.sampling_times,
+            sampling_period_seconds: value.sampling_period_seconds,
             delay_ms: value.delay_ms,
             seed,
             atom_movement_probability: AtomMovementProbability {

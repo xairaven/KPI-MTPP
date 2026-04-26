@@ -1,17 +1,24 @@
 use crate::backend::crystal::{AtomMovementProbability, Crystal, CrystalSize};
+use std::time::Instant;
 use thiserror::Error;
 
 #[derive(Debug)]
 pub struct Simulation {
     pub crystal: Crystal,
     pub settings: SimulationSettings,
+    pub start_time: Instant,
 }
 
 impl Simulation {
     pub fn new(settings: SimulationSettings) -> Self {
         let crystal = Crystal::new(settings.atoms_amount, settings.crystal_size.clone());
+        let start_time = Instant::now();
 
-        Self { crystal, settings }
+        Self {
+            crystal,
+            settings,
+            start_time,
+        }
     }
 }
 
@@ -20,7 +27,7 @@ pub struct SimulationSettings {
     pub atoms_amount: usize,
     pub time_seconds: usize,
     pub delay_ms: usize,
-    pub sampling_times: f64,
+    pub sampling_period_seconds: f64,
     pub seed: Option<u64>,
     pub atom_movement_probability: AtomMovementProbability,
     pub crystal_size: CrystalSize,

@@ -163,8 +163,8 @@ impl SettingsComponent {
                     .show(ui);
                 ui.end_row();
 
-                ui.label("Sampling Times:");
-                DragValueNotifiable::new(&mut settings.sampling_times)
+                ui.label("Sampling Period:");
+                DragValueNotifiable::new(&mut settings.sampling_period_seconds)
                     .speed(0.1)
                     .range(simulation::ranges::SAMPLING)
                     .suffix(" sec.")
