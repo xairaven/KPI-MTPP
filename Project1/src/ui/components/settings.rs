@@ -1,3 +1,4 @@
+use crate::backend::commands::UiCommand;
 use crate::backend::simulation;
 use crate::backend::simulation::{SimulationError, SimulationSettings};
 use crate::context::Context;
@@ -130,7 +131,7 @@ impl SettingsComponent {
         self.header(ui, "Simulation Settings");
 
         let settings = &mut context.ui_state.simulation_settings;
-        let commands_channel = &context.commands_channel;
+        let commands_tx = &context.ui_commands_tx;
 
         Grid::new("SimulationSettings")
             .num_columns(2)
@@ -139,7 +140,8 @@ impl SettingsComponent {
                 DragValueNotifiable::new(&mut settings.border_width)
                     .speed(1)
                     .range(simulation::ranges::BORDER)
-                    .channel(commands_channel.clone())
+                    .tx(commands_tx.clone())
+                    .command(UiCommand::ParameterUpdated)
                     .show(ui);
                 ui.end_row();
 
@@ -147,7 +149,8 @@ impl SettingsComponent {
                 DragValueNotifiable::new(&mut settings.border_height)
                     .speed(1)
                     .range(simulation::ranges::BORDER)
-                    .channel(commands_channel.clone())
+                    .tx(commands_tx.clone())
+                    .command(UiCommand::ParameterUpdated)
                     .show(ui);
                 ui.end_row();
 
@@ -155,7 +158,8 @@ impl SettingsComponent {
                 DragValueNotifiable::new(&mut settings.atoms_amount)
                     .speed(1)
                     .range(simulation::ranges::ATOMS_AMOUNT)
-                    .channel(commands_channel.clone())
+                    .tx(commands_tx.clone())
+                    .command(UiCommand::ParameterUpdated)
                     .show(ui);
                 ui.end_row();
 
@@ -164,7 +168,8 @@ impl SettingsComponent {
                     .speed(0.1)
                     .range(simulation::ranges::SAMPLING)
                     .suffix(" sec.")
-                    .channel(commands_channel.clone())
+                    .tx(commands_tx.clone())
+                    .command(UiCommand::ParameterUpdated)
                     .show(ui);
                 ui.end_row();
 
@@ -172,7 +177,8 @@ impl SettingsComponent {
                 DragValueNotifiable::new(&mut settings.delay_ms)
                     .speed(1)
                     .suffix(" ms.")
-                    .channel(commands_channel.clone())
+                    .tx(commands_tx.clone())
+                    .command(UiCommand::ParameterUpdated)
                     .show(ui);
                 ui.end_row();
 
@@ -197,13 +203,15 @@ impl SettingsComponent {
             DragValueNotifiable::new(&mut settings.time_minutes)
                 .speed(1)
                 .range(simulation::ranges::TIME)
-                .channel(commands_channel.clone())
+                .tx(commands_tx.clone())
+                .command(UiCommand::ParameterUpdated)
                 .show(ui);
             ui.label(":");
             DragValueNotifiable::new(&mut settings.time_seconds)
                 .speed(1)
                 .range(simulation::ranges::TIME)
-                .channel(commands_channel.clone())
+                .tx(commands_tx.clone())
+                .command(UiCommand::ParameterUpdated)
                 .show(ui);
         });
 
@@ -220,7 +228,8 @@ impl SettingsComponent {
                 DragValueNotifiable::new(&mut settings.probability_up)
                     .speed(0.01)
                     .range(simulation::ranges::MOVEMENT_PROBABILITY)
-                    .channel(commands_channel.clone())
+                    .tx(commands_tx.clone())
+                    .command(UiCommand::ParameterUpdated)
                     .show(ui);
                 ui.end_row();
 
@@ -228,7 +237,8 @@ impl SettingsComponent {
                 DragValueNotifiable::new(&mut settings.probability_left)
                     .speed(0.01)
                     .range(simulation::ranges::MOVEMENT_PROBABILITY)
-                    .channel(commands_channel.clone())
+                    .tx(commands_tx.clone())
+                    .command(UiCommand::ParameterUpdated)
                     .show(ui);
                 ui.end_row();
 
@@ -236,7 +246,8 @@ impl SettingsComponent {
                 DragValueNotifiable::new(&mut settings.probability_right)
                     .speed(0.01)
                     .range(simulation::ranges::MOVEMENT_PROBABILITY)
-                    .channel(commands_channel.clone())
+                    .tx(commands_tx.clone())
+                    .command(UiCommand::ParameterUpdated)
                     .show(ui);
                 ui.end_row();
 
@@ -244,7 +255,8 @@ impl SettingsComponent {
                 DragValueNotifiable::new(&mut settings.probability_down)
                     .speed(0.01)
                     .range(simulation::ranges::MOVEMENT_PROBABILITY)
-                    .channel(commands_channel.clone())
+                    .tx(commands_tx.clone())
+                    .command(UiCommand::ParameterUpdated)
                     .show(ui);
                 ui.end_row();
             });
@@ -312,7 +324,9 @@ impl SettingsComponent {
                     match settings {
                         Ok(settings) => player.start(settings.clone()),
                         Err(err) => {
-                            context.error_modals.try_send(ErrorModal::new(err.into()))
+                            let _ = context
+                                .error_modals_tx
+                                .try_send(ErrorModal::new(err.into()));
                         },
                     }
                 }

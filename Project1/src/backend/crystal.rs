@@ -1,9 +1,8 @@
 use std::sync::atomic::AtomicUsize;
-use std::sync::{Arc, RwLock};
 
 #[derive(Debug)]
 pub struct Crystal {
-    pub atoms: Vec<Arc<RwLock<Atom>>>,
+    pub atoms: Vec<Atom>,
     pub field: Vec<AtomicUsize>,
 
     pub size: CrystalSize,
@@ -15,11 +14,9 @@ impl Crystal {
         let initial_y = size.height / 2;
 
         let atoms = (0..atoms_amount)
-            .map(|_| {
-                Arc::new(RwLock::new(Atom {
-                    x: initial_x,
-                    y: initial_y,
-                }))
+            .map(|_| Atom {
+                x: initial_x,
+                y: initial_y,
             })
             .collect();
 
@@ -27,7 +24,15 @@ impl Crystal {
             .map(|_| AtomicUsize::new(0))
             .collect();
 
-        Self { atoms, field, size }
+        let crystal = Self { atoms, field, size };
+
+        // Synchronizing field
+        for atom in &crystal.atoms {
+            let idx = atom.y * crystal.size.width + atom.x;
+            crystal.field[idx].fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        }
+
+        crystal
     }
 }
 

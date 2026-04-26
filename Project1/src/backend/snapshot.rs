@@ -38,8 +38,7 @@ impl TryFrom<&Crystal> for CrystalSnapshot {
     fn try_from(crystal: &Crystal) -> Result<Self, Self::Error> {
         let mut atoms = Vec::with_capacity(crystal.atoms.len());
         for atom in &crystal.atoms {
-            let guard = atom.read().map_err(|_| SimulationError::MutexPoisoned)?;
-            atoms.push(guard.clone());
+            atoms.push(atom.clone());
         }
 
         let mut field = Vec::with_capacity(crystal.field.len());

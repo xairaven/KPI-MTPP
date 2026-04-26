@@ -38,9 +38,6 @@ pub mod ranges {
 
 #[derive(Debug, Error)]
 pub enum SimulationError {
-    #[error("Mutex Poisoned.")]
-    MutexPoisoned,
-
     #[error(
         "Probabilities must be non-negative and their sum must be less than or equal to 1."
     )]

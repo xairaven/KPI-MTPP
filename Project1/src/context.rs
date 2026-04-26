@@ -1,4 +1,4 @@
-use crate::backend::commands::UiCommand;
+use crate::backend::commands::{EngineEvent, UiCommand};
 use crate::backend::engine::Engine;
 use crate::backend::performance::PerformanceMonitor;
 use crate::config::Config;
@@ -9,33 +9,42 @@ use crate::graphics::{Viewport, ViewportGeometry, ViewportState, ZeroPointLocati
 use crate::ui::modals::error::ErrorModal;
 use crate::ui::states::player::Player;
 use crate::ui::states::settings::SimulationSettingsUi;
-use crate::utils::channel::Channel;
+use crossbeam::channel::{Receiver, Sender};
 
 #[derive(Debug)]
 pub struct Context {
-    pub engine: Engine,
-
     pub ui_state: UiState,
     pub performance_monitor: PerformanceMonitor,
-
     pub viewport: Viewport,
 
     pub config: Config,
 
-    pub commands_channel: Channel<UiCommand>,
-    pub error_modals: Channel<ErrorModal>,
+    pub ui_commands_tx: Sender<UiCommand>,
+    pub ui_commands_rx: Receiver<UiCommand>,
+    pub engine_event_tx: Sender<EngineEvent>,
+    pub engine_event_rx: Receiver<EngineEvent>,
+    pub error_modals_tx: Sender<ErrorModal>,
+    pub error_modals_rx: Receiver<ErrorModal>,
 }
 
 impl Context {
     pub fn new(config: Config) -> Self {
-        let commands: Channel<UiCommand> = Default::default();
-        let errors: Channel<ErrorModal> = Default::default();
-        let engine = Engine::new(commands.clone(), errors.clone());
-        let player = Player::new(commands.clone());
+        let (ui_commands_tx, ui_commands_rx) = crossbeam::channel::unbounded();
+        let (engine_event_tx, engine_event_rx) = crossbeam::channel::unbounded();
+        let (error_modals_tx, error_modals_rx) = crossbeam::channel::unbounded();
+
+        let mut engine = Engine::new(
+            ui_commands_rx.clone(),
+            engine_event_tx.clone(),
+            error_modals_tx.clone(),
+        );
+        std::thread::spawn(move || {
+            engine.run();
+        });
+
+        let player = Player::new(ui_commands_tx.clone());
 
         Self {
-            engine,
-
             ui_state: UiState::new(player),
             performance_monitor: PerformanceMonitor::new(),
 
@@ -55,8 +64,12 @@ impl Context {
 
             config,
 
-            commands_channel: commands,
-            error_modals: errors,
+            ui_commands_tx,
+            ui_commands_rx,
+            engine_event_tx,
+            engine_event_rx,
+            error_modals_tx,
+            error_modals_rx,
         }
     }
 

@@ -1,20 +1,19 @@
-use crate::backend::commands::UiCommand;
-use crate::utils::channel::Channel;
+use crossbeam::channel::Sender;
 use egui::{DragValue, emath};
 use std::ops::RangeInclusive;
 
 #[derive(Debug)]
-pub struct DragValueNotifiable<'a, Num: emath::Numeric> {
+pub struct DragValueNotifiable<'a, Num: emath::Numeric, T: Clone> {
     value: &'a mut Num,
     speed: f64,
     range: RangeInclusive<Num>,
     suffix: String,
 
-    channel: Channel<UiCommand>,
-    command: UiCommand,
+    tx: Sender<T>,
+    commands: Vec<T>,
 }
 
-impl<'a, Num: emath::Numeric> DragValueNotifiable<'a, Num> {
+impl<'a, Num: emath::Numeric, T: Clone> DragValueNotifiable<'a, Num, T> {
     pub fn new(value: &'a mut Num) -> Self {
         Self {
             value,
@@ -22,8 +21,8 @@ impl<'a, Num: emath::Numeric> DragValueNotifiable<'a, Num> {
             range: Num::MIN..=Num::MAX,
             suffix: "".to_string(),
 
-            channel: Default::default(),
-            command: UiCommand::ParameterUpdated,
+            tx: crossbeam::channel::unbounded::<T>().0,
+            commands: vec![],
         }
     }
 
@@ -41,8 +40,13 @@ impl<'a, Num: emath::Numeric> DragValueNotifiable<'a, Num> {
         Self { suffix, ..self }
     }
 
-    pub fn channel(self, channel: Channel<UiCommand>) -> Self {
-        Self { channel, ..self }
+    pub fn tx(self, tx: Sender<T>) -> Self {
+        Self { tx, ..self }
+    }
+
+    pub fn command(mut self, command: T) -> Self {
+        self.commands.push(command);
+        self
     }
 
     pub fn show(&mut self, ui: &mut egui::Ui) {
@@ -55,7 +59,9 @@ impl<'a, Num: emath::Numeric> DragValueNotifiable<'a, Num> {
             )
             .changed()
         {
-            self.channel.try_send(self.command.clone());
+            for command in self.commands.iter() {
+                let _ = self.tx.send(command.clone());
+            }
         }
     }
 }

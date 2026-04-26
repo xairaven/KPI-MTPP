@@ -8,5 +8,11 @@ pub enum UiCommand {
 
     StartSimulation(SimulationSettings),
     StopSimulation,
+}
+
+#[derive(Debug, Clone)]
+pub enum EngineEvent {
+    AlgorithmPassed(CrystalSnapshot),
     Snapshot(CrystalSnapshot),
+    SimulationFinished,
 }

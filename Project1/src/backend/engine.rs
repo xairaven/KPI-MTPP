@@ -1,30 +1,29 @@
-use crate::backend::commands::UiCommand;
-use crate::backend::simulation::{Simulation, SimulationSettings};
+use crate::backend::commands::{EngineEvent, UiCommand};
+use crate::backend::simulation::Simulation;
 use crate::ui::modals::error::ErrorModal;
-use crate::utils::channel::Channel;
+use crossbeam::channel::{Receiver, Sender};
 
 #[derive(Debug)]
 pub struct Engine {
     pub simulation: Option<Simulation>,
 
-    pub commands_channel: Channel<UiCommand>,
-    pub errors_channel: Channel<ErrorModal>,
+    pub ui_commands_rx: Receiver<UiCommand>,
+    pub events_tx: Sender<EngineEvent>,
+    pub errors_tx: Sender<ErrorModal>,
 }
 
 impl Engine {
-    pub fn new(commands: Channel<UiCommand>, errors: Channel<ErrorModal>) -> Self {
+    pub fn new(
+        commands: Receiver<UiCommand>, events: Sender<EngineEvent>,
+        errors: Sender<ErrorModal>,
+    ) -> Self {
         Self {
             simulation: None,
-            commands_channel: commands,
-            errors_channel: errors,
+            ui_commands_rx: commands,
+            events_tx: events,
+            errors_tx: errors,
         }
     }
 
-    pub fn start_simulation(&mut self, settings: SimulationSettings) {
-        self.simulation = Some(Simulation::new(settings));
-    }
-
-    pub fn stop_simulation(&mut self) {
-        self.simulation = None;
-    }
+    pub fn run(&mut self) {}
 }

@@ -1,6 +1,6 @@
 use crate::backend::commands::UiCommand;
 use crate::backend::simulation::SimulationSettings;
-use crate::utils::channel::Channel;
+use crossbeam::channel::Sender;
 use std::time::Instant;
 
 #[derive(Debug)]
@@ -8,16 +8,17 @@ pub struct Player {
     pub is_running: bool,
     pub start_time: Option<Instant>,
     pub view_mode: ViewMode,
-    pub channel: Channel<UiCommand>,
+
+    pub command_tx: Sender<UiCommand>,
 }
 
 impl Player {
-    pub fn new(channel: Channel<UiCommand>) -> Self {
+    pub fn new(command_tx: Sender<UiCommand>) -> Self {
         Self {
             is_running: false,
             start_time: None,
             view_mode: Default::default(),
-            channel,
+            command_tx,
         }
     }
 
@@ -28,7 +29,9 @@ impl Player {
 
         self.is_running = true;
         self.start_time = Some(Instant::now());
-        self.channel.try_send(UiCommand::StartSimulation(settings));
+        let _ = self
+            .command_tx
+            .try_send(UiCommand::StartSimulation(settings));
     }
 
     pub fn stop(&mut self) {
@@ -37,7 +40,7 @@ impl Player {
         }
         self.is_running = false;
         self.start_time = None;
-        self.channel.try_send(UiCommand::StopSimulation);
+        let _ = self.command_tx.try_send(UiCommand::StopSimulation);
     }
 
     pub fn time(&self) -> String {
