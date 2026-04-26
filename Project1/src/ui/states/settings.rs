@@ -1,4 +1,7 @@
-#[derive(Debug)]
+use crate::backend::crystal::{AtomMovementProbability, CrystalSize};
+use crate::backend::simulation::SimulationSettings;
+
+#[derive(Debug, Clone)]
 pub struct SimulationSettingsUi {
     pub atoms_amount: usize,
     pub time_minutes: usize,
@@ -44,6 +47,26 @@ impl Default for SimulationSettingsUi {
 
             border_width: 10,
             border_height: 10,
+        }
+    }
+}
+
+impl From<SimulationSettingsUi> for SimulationSettings {
+    fn from(value: SimulationSettingsUi) -> Self {
+        Self {
+            atoms_amount: value.atoms_amount,
+            time_seconds: value.time_minutes * 60 + value.time_seconds,
+            sampling_times: value.sampling_times,
+            atom_movement_probability: AtomMovementProbability {
+                up: value.probability_up,
+                down: value.probability_down,
+                left: value.probability_left,
+                right: value.probability_right,
+            },
+            crystal_size: CrystalSize {
+                width: value.border_width,
+                height: value.border_height,
+            },
         }
     }
 }

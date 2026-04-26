@@ -7,6 +7,7 @@ use crate::graphics::figures::simulation::SimulationVisualizer;
 use crate::graphics::units::{Centimeter, Pixel};
 use crate::graphics::{Viewport, ViewportGeometry, ViewportState, ZeroPointLocation};
 use crate::ui::modals::error::ErrorModal;
+use crate::ui::states::player::Player;
 use crate::ui::states::settings::SimulationSettingsUi;
 use crate::utils::channel::Channel;
 
@@ -30,11 +31,12 @@ impl Context {
         let commands: Channel<UiCommand> = Default::default();
         let errors: Channel<ErrorModal> = Default::default();
         let engine = Engine::new(commands.clone(), errors.clone());
+        let player = Player::new(commands.clone());
 
         Self {
             engine,
 
-            ui_state: Default::default(),
+            ui_state: UiState::new(player),
             performance_monitor: PerformanceMonitor::new(),
 
             viewport: Viewport {
@@ -66,13 +68,16 @@ impl Context {
 #[derive(Debug)]
 pub struct UiState {
     pub grid: Grid2D,
+    pub player: Player,
     pub simulation_visualizer: SimulationVisualizer,
     pub simulation_settings: SimulationSettingsUi,
 }
 
-impl Default for UiState {
-    fn default() -> Self {
+impl UiState {
+    pub fn new(player: Player) -> Self {
         Self {
+            player,
+
             grid: Grid2DBuilder::default().with_unit(Centimeter(1.0)).build(),
             simulation_visualizer: Default::default(),
             simulation_settings: Default::default(),

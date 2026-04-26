@@ -2,6 +2,7 @@ use crate::backend::simulation;
 use crate::context::Context;
 use crate::graphics;
 use crate::ui::controls::drag_value::DragValueNotifiable;
+use crate::ui::states::player::ViewMode;
 use eframe::epaint::Color32;
 use egui::{DragValue, Grid, Panel, RichText, ScrollArea};
 
@@ -32,6 +33,10 @@ impl SettingsComponent {
                     ui.add_space(10.0);
 
                     self.simulation_settings(ui, context);
+
+                    self.separator(ui);
+
+                    self.simulation_player(ui, context);
 
                     self.separator(ui);
 
@@ -202,6 +207,60 @@ impl SettingsComponent {
                 );
             });
         }
+    }
+
+    fn simulation_player(&self, ui: &mut egui::Ui, context: &mut Context) {
+        self.header(ui, "Simulation Player");
+        let settings = &mut context.ui_state.simulation_settings;
+        let player = &mut context.ui_state.player;
+
+        Grid::new("Player").num_columns(3).show(ui, |ui| {
+            ui.label("Mode:");
+            egui::ComboBox::from_label("")
+                .selected_text(player.view_mode.to_string())
+                .show_ui(ui, |ui| {
+                    ui.selectable_value(
+                        &mut player.view_mode,
+                        ViewMode::RealTime,
+                        "Real-Time",
+                    );
+                    ui.selectable_value(
+                        &mut player.view_mode,
+                        ViewMode::Snapshot,
+                        "Snapshot",
+                    );
+                });
+            ui.end_row();
+
+            match player.view_mode {
+                ViewMode::RealTime => {
+                    ui.label("Status:");
+                    ui.label(match player.is_running {
+                        true => RichText::new("Running").color(Color32::GREEN),
+                        false => RichText::new("Stopped").color(Color32::RED),
+                    });
+                    ui.end_row();
+                    ui.label("Time:");
+                    ui.label(player.time());
+                },
+                ViewMode::Snapshot => {
+                    todo!()
+                },
+            }
+        });
+
+        ui.vertical_centered_justified(|ui| match player.is_running {
+            true => {
+                if ui.button("Stop").clicked() {
+                    player.stop();
+                }
+            },
+            false => {
+                if ui.button("Start").clicked() {
+                    player.start(settings.clone().into());
+                }
+            },
+        });
     }
 
     fn separator(&self, ui: &mut egui::Ui) {
