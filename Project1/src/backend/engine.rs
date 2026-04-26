@@ -1,5 +1,5 @@
 use crate::backend::commands::UiCommand;
-use crate::backend::simulation::Simulation;
+use crate::backend::simulation::{Simulation, SimulationSettings};
 use crate::ui::modals::error::ErrorModal;
 use crate::utils::channel::Channel;
 
@@ -18,5 +18,13 @@ impl Engine {
             commands_channel: commands,
             errors_channel: errors,
         }
+    }
+
+    pub fn start_simulation(&mut self, settings: SimulationSettings) {
+        self.simulation = Some(Simulation::new(settings));
+    }
+
+    pub fn stop_simulation(&mut self) {
+        self.simulation = None;
     }
 }

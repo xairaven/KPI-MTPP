@@ -1,7 +1,7 @@
-use crate::backend::commands::UiCommand::ParameterUpdated;
+use crate::backend::simulation;
 use crate::context::Context;
 use crate::graphics;
-use crate::graphics::figures::border;
+use crate::ui::controls::drag_value::DragValueNotifiable;
 use eframe::epaint::Color32;
 use egui::{DragValue, Grid, Panel, RichText, ScrollArea};
 
@@ -31,7 +31,7 @@ impl SettingsComponent {
                     });
                     ui.add_space(10.0);
 
-                    self.border_settings(ui, context);
+                    self.simulation_settings(ui, context);
 
                     self.separator(ui);
 
@@ -83,12 +83,12 @@ impl SettingsComponent {
                     .speed(1)
                     .range(graphics::PX_PER_CM_RANGE),
             );
+        });
 
-            ui.vertical_centered_justified(|ui| {
-                if ui.button("Reset").clicked() {
-                    context.viewport.geometry.reset_pixels_per_centimeter();
-                }
-            });
+        ui.vertical_centered_justified(|ui| {
+            if ui.button("Reset").clicked() {
+                context.viewport.geometry.reset_pixels_per_centimeter();
+            }
         });
 
         Grid::new("UI_GRID_SETTINGS").num_columns(2).show(ui, |ui| {
@@ -119,50 +119,39 @@ impl SettingsComponent {
         });
     }
 
-    fn border_settings(&self, ui: &mut egui::Ui, context: &mut Context) {
-        self.header(ui, "Border");
+    fn simulation_settings(&self, ui: &mut egui::Ui, context: &mut Context) {
+        self.header(ui, "Simulation Settings");
 
-        let border = &mut context.ui_state.border;
+        let settings = &mut context.ui_state.simulation_settings;
         let commands_channel = &context.commands_channel;
 
-        Grid::new("BORDER_RANGE").num_columns(4).show(ui, |ui| {
-            ui.label("Range");
-            ui.end_row();
+        Grid::new("SimulationSettings")
+            .num_columns(2)
+            .show(ui, |ui| {
+                ui.label("Border Width:");
+                DragValueNotifiable::new(&mut settings.border_width)
+                    .speed(1)
+                    .range(simulation::ranges::BORDER)
+                    .channel(commands_channel.clone())
+                    .show(ui);
+                ui.end_row();
 
-            ui.label("M:");
-            if ui
-                .add(
-                    DragValue::new(&mut border.m)
-                        .speed(1)
-                        .range(border::BORDER_RANGE),
-                )
-                .changed()
-            {
-                commands_channel.try_send(ParameterUpdated);
-            }
+                ui.label("Border Height:");
+                DragValueNotifiable::new(&mut settings.border_height)
+                    .speed(1)
+                    .range(simulation::ranges::BORDER)
+                    .channel(commands_channel.clone())
+                    .show(ui);
+                ui.end_row();
 
-            ui.label("N:");
-            if ui
-                .add(
-                    DragValue::new(&mut border.n)
-                        .speed(1)
-                        .range(border::BORDER_RANGE),
-                )
-                .changed()
-            {
-                commands_channel.try_send(ParameterUpdated);
-            }
-            ui.end_row();
-        });
-
-        ui.add_space(5.0);
-
-        ui.vertical_centered_justified(|ui| {
-            if ui.button("Reset").clicked() {
-                border.reset();
-                commands_channel.try_send(ParameterUpdated);
-            }
-        });
+                ui.label("Atoms Amount:");
+                DragValueNotifiable::new(&mut settings.atoms_amount)
+                    .speed(1)
+                    .range(simulation::ranges::ATOMS_AMOUNT)
+                    .channel(commands_channel.clone())
+                    .show(ui);
+                ui.end_row();
+            });
     }
 
     fn separator(&self, ui: &mut egui::Ui) {

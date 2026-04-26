@@ -2,11 +2,12 @@ use crate::backend::commands::UiCommand;
 use crate::backend::engine::Engine;
 use crate::backend::performance::PerformanceMonitor;
 use crate::config::Config;
-use crate::graphics::figures::border::Border;
 use crate::graphics::figures::grid::{Grid2D, Grid2DBuilder};
+use crate::graphics::figures::simulation::SimulationVisualizer;
 use crate::graphics::units::{Centimeter, Pixel};
 use crate::graphics::{Viewport, ViewportGeometry, ViewportState, ZeroPointLocation};
 use crate::ui::modals::error::ErrorModal;
+use crate::ui::states::settings::SimulationSettingsUi;
 use crate::utils::channel::Channel;
 
 #[derive(Debug)]
@@ -65,14 +66,16 @@ impl Context {
 #[derive(Debug)]
 pub struct UiState {
     pub grid: Grid2D,
-    pub border: Border,
+    pub simulation_visualizer: SimulationVisualizer,
+    pub simulation_settings: SimulationSettingsUi,
 }
 
 impl Default for UiState {
     fn default() -> Self {
         Self {
             grid: Grid2DBuilder::default().with_unit(Centimeter(1.0)).build(),
-            border: Default::default(),
+            simulation_visualizer: Default::default(),
+            simulation_settings: Default::default(),
         }
     }
 }

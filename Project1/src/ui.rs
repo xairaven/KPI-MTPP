@@ -64,9 +64,13 @@ pub enum GraphicsBackendError {
 
 pub mod creator;
 pub mod modals;
+pub mod states;
 pub mod workspace;
 
 pub mod components {
     pub mod canvas;
     pub mod settings;
+}
+pub mod controls {
+    pub mod drag_value;
 }

@@ -1,6 +1,4 @@
 use crate::context::Context;
-use crate::graphics::primitives::line::Line;
-use crate::graphics::primitives::point::Point;
 use egui::{CentralPanel, Color32, Frame, Painter, Response, Sense, Shape};
 
 #[derive(Debug, Default)]
@@ -27,19 +25,24 @@ impl CanvasComponent {
     }
 
     fn create_shapes(_ui: &mut egui::Ui, context: &mut Context) -> Vec<Shape> {
-        let mut lines = vec![];
+        let mut shapes = vec![];
 
-        let grid: Vec<Line<Point>> = context.ui_state.grid.lines(&context.viewport);
-        let border: Vec<Line<Point>> = context.ui_state.border.lines();
-
-        // Conversion to shapes
-        lines.extend(grid);
-        lines.extend(border);
-
-        lines
+        let grid: Vec<Shape> = context
+            .ui_state
+            .grid
+            .lines(&context.viewport)
             .iter()
             .map(|line| line.to_pixels(&context.viewport).to_shape())
-            .collect::<Vec<Shape>>()
+            .collect::<Vec<Shape>>();
+        shapes.extend(grid);
+
+        let simulation: Vec<Shape> = context
+            .ui_state
+            .simulation_visualizer
+            .visualize(&context.viewport);
+        shapes.extend(simulation);
+
+        shapes
     }
 
     fn draw(ui: &mut egui::Ui, context: &mut Context, shapes: Vec<Shape>) -> Response {

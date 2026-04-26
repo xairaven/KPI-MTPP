@@ -185,8 +185,8 @@ impl ViewportBounds<Pixel> {
 }
 
 pub mod figures {
-    pub mod border;
     pub mod grid;
+    pub mod simulation;
 }
 pub mod primitives {
     pub mod line;

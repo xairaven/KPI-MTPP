@@ -19,9 +19,19 @@ impl Simulation {
 pub struct SimulationSettings {
     pub atoms_amount: usize,
     pub time_seconds: usize,
-    pub sampling_times: usize,
+    pub sampling_times: f64,
     pub atom_movement_probability: AtomMovementProbability,
     pub crystal_size: CrystalSize,
+}
+
+pub mod ranges {
+    use std::ops::RangeInclusive;
+
+    pub const ATOMS_AMOUNT: RangeInclusive<usize> = 1..=100_000;
+    pub const TIME: RangeInclusive<usize> = 0..=59;
+    pub const SAMPLING: RangeInclusive<f64> = 0.1..=100.0;
+    pub const MOVEMENT_PROBABILITY: RangeInclusive<f64> = 0.0..=1.0;
+    pub const BORDER: RangeInclusive<usize> = 5..=100;
 }
 
 #[derive(Debug, Error)]
