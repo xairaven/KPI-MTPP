@@ -92,8 +92,8 @@ impl TryFrom<SimulationSettingsUi> for SimulationSettings {
                 right: value.probability_right,
             },
             crystal_size: CrystalSize {
-                width: value.border_width,
-                height: value.border_height,
+                width: value.border_width + 1,
+                height: value.border_height + 1,
             },
         })
     }

@@ -14,8 +14,8 @@ pub struct Border {
 impl Default for Border {
     fn default() -> Self {
         Self {
-            m: 10,
-            n: 10,
+            m: 11,
+            n: 11,
 
             stroke: Stroke::new(2.0, Color32::BLACK),
         }
@@ -45,7 +45,7 @@ impl Border {
     }
 
     pub fn resize(&mut self, size: &CrystalSize) {
-        self.m = size.width;
-        self.n = size.height;
+        self.m = size.width - 1;
+        self.n = size.height - 1;
     }
 }
