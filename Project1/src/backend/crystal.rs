@@ -29,7 +29,6 @@ impl Crystal {
 
                 Atom {
                     rng,
-                    id,
                     x: initial_x,
                     y: initial_y,
                 }
@@ -54,7 +53,6 @@ impl Crystal {
 
 #[derive(Debug, Clone)]
 pub struct Atom {
-    pub id: usize,
     pub x: usize,
     pub y: usize,
     pub rng: SmallRng,
