@@ -3,7 +3,6 @@ use crate::backend::engine::Engine;
 use crate::backend::performance::PerformanceMonitor;
 use crate::config::Config;
 use crate::graphics::figures::grid::{Grid2D, Grid2DBuilder};
-use crate::graphics::figures::simulation::SimulationVisualizer;
 use crate::graphics::units::{Centimeter, Pixel};
 use crate::graphics::{Viewport, ViewportGeometry, ViewportState, ZeroPointLocation};
 use crate::ui::modals::error::ErrorModal;
@@ -37,10 +36,8 @@ impl Context {
             engine.run();
         });
 
-        let player = Player::new(ui_commands_tx.clone());
-
         Self {
-            ui_state: UiState::new(player),
+            ui_state: UiState::new(ui_commands_tx.clone()),
             performance_monitor: PerformanceMonitor::new(),
 
             viewport: Viewport {
@@ -75,17 +72,14 @@ impl Context {
 pub struct UiState {
     pub grid: Grid2D,
     pub player: Player,
-    pub simulation_visualizer: SimulationVisualizer,
     pub simulation_settings: SimulationSettingsUi,
 }
 
 impl UiState {
-    pub fn new(player: Player) -> Self {
+    pub fn new(ui_tx: Sender<UiCommand>) -> Self {
         Self {
-            player,
-
+            player: Player::new(ui_tx),
             grid: Grid2DBuilder::default().with_unit(Centimeter(1.0)).build(),
-            simulation_visualizer: Default::default(),
             simulation_settings: Default::default(),
         }
     }

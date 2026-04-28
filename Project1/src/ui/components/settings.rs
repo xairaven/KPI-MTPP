@@ -5,7 +5,7 @@ use crate::context::Context;
 use crate::graphics;
 use crate::ui::controls::drag_value::DragValueNotifiable;
 use crate::ui::modals::error::ErrorModal;
-use crate::ui::states::player::ViewMode;
+use crate::ui::states::player::{ViewMode, ViewModeId};
 use eframe::epaint::Color32;
 use egui::{DragValue, Grid, Panel, RichText, ScrollArea, TextEdit};
 
@@ -273,56 +273,69 @@ impl SettingsComponent {
 
     fn simulation_player(&self, ui: &mut egui::Ui, context: &mut Context) {
         self.header(ui, "Simulation Player");
-        let settings = &mut context.ui_state.simulation_settings;
         let player = &mut context.ui_state.player;
 
         Grid::new("Player").num_columns(3).show(ui, |ui| {
             ui.label("Mode:");
-            egui::ComboBox::from_label("")
-                .selected_text(player.view_mode.to_string())
+            if egui::ComboBox::from_label("")
+                .selected_text(player.mode.to_string())
                 .show_ui(ui, |ui| {
                     ui.selectable_value(
-                        &mut player.view_mode,
-                        ViewMode::RealTime,
+                        &mut player.mode,
+                        ViewModeId::RealTime,
                         "Real-Time",
                     );
                     ui.selectable_value(
-                        &mut player.view_mode,
-                        ViewMode::Snapshot,
+                        &mut player.mode,
+                        ViewModeId::Snapshot,
                         "Snapshot",
                     );
-                });
+                })
+                .response
+                .changed()
+            {
+                player.change_mode();
+            };
             ui.end_row();
-
-            match player.view_mode {
-                ViewMode::RealTime => {
-                    ui.label("Status:");
-                    ui.label(match player.is_running {
-                        true => RichText::new("Running").color(Color32::GREEN),
-                        false => RichText::new("Stopped").color(Color32::RED),
-                    });
-                    ui.end_row();
-                    ui.label("Time:");
-                    ui.label(player.time());
-                },
-                ViewMode::Snapshot => {
-                    todo!()
-                },
-            }
         });
 
-        ui.vertical_centered_justified(|ui| match player.is_running {
+        match player.mode {
+            ViewModeId::RealTime => self.realtime_mode(ui, context),
+            ViewModeId::Snapshot => self.snapshot_mode(ui, context),
+        }
+    }
+
+    fn realtime_mode(&self, ui: &mut egui::Ui, context: &mut Context) {
+        let visualizer =
+            if let ViewMode::RealTime(value) = &mut context.ui_state.player.mode_player {
+                value
+            } else {
+                return;
+            };
+
+        Grid::new("RealTimePlayer").num_columns(2).show(ui, |ui| {
+            ui.label("Status:");
+            ui.label(match visualizer.is_enabled {
+                true => RichText::new("Running").color(Color32::GREEN),
+                false => RichText::new("Stopped").color(Color32::RED),
+            });
+            ui.end_row();
+            ui.label("Time:");
+            ui.label(visualizer.time());
+        });
+
+        ui.vertical_centered_justified(|ui| match visualizer.is_enabled {
             true => {
                 if ui.button("Stop").clicked() {
-                    player.stop();
+                    visualizer.stop();
                 }
             },
             false => {
                 if ui.button("Start").clicked() {
                     let settings: Result<SimulationSettings, SimulationError> =
-                        settings.clone().try_into();
+                        context.ui_state.simulation_settings.clone().try_into();
                     match settings {
-                        Ok(settings) => player.start(settings.clone()),
+                        Ok(settings) => visualizer.start(&settings),
                         Err(err) => {
                             let _ = context
                                 .error_modals_tx
@@ -332,6 +345,15 @@ impl SettingsComponent {
                 }
             },
         });
+    }
+
+    fn snapshot_mode(&self, ui: &mut egui::Ui, context: &mut Context) {
+        let _visualizer = if let ViewMode::Snapshot = &context.ui_state.player.mode_player
+        {
+            todo!()
+        } else {
+            return;
+        };
     }
 
     fn separator(&self, ui: &mut egui::Ui) {

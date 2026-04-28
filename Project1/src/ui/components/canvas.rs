@@ -36,10 +36,7 @@ impl CanvasComponent {
             .collect::<Vec<Shape>>();
         shapes.extend(grid);
 
-        let simulation: Vec<Shape> = context
-            .ui_state
-            .simulation_visualizer
-            .visualize(&context.viewport);
+        let simulation: Vec<Shape> = context.ui_state.player.visualize(&context.viewport);
         shapes.extend(simulation);
 
         shapes

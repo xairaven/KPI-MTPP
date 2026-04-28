@@ -1,49 +1,7 @@
 use crate::backend::crystal::CrystalSize;
-use crate::backend::simulation::SimulationSettings;
-use crate::graphics::Viewport;
 use crate::graphics::primitives::line::Line;
 use crate::graphics::primitives::point::Point;
-use egui::{Color32, Shape, Stroke};
-
-#[derive(Debug, Default)]
-pub struct SimulationVisualizer {
-    is_enabled: bool,
-    border: Border,
-}
-
-impl SimulationVisualizer {
-    pub fn start(&mut self, settings: &SimulationSettings) {
-        self.is_enabled = true;
-        self.border.resize(&settings.crystal_size);
-    }
-
-    pub fn stop(&mut self) {
-        self.reset();
-        self.is_enabled = false;
-    }
-
-    pub fn visualize(&self, viewport: &Viewport) -> Vec<Shape> {
-        if !self.is_enabled {
-            return vec![];
-        }
-
-        let mut shapes = Vec::new();
-
-        let border = self
-            .border
-            .lines()
-            .iter()
-            .map(|line| line.to_pixels(viewport).to_shape())
-            .collect::<Vec<Shape>>();
-        shapes.extend(border);
-
-        shapes
-    }
-
-    pub fn reset(&mut self) {
-        *self = Default::default();
-    }
-}
+use egui::{Color32, Stroke};
 
 #[derive(Debug)]
 pub struct Border {
