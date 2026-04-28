@@ -189,6 +189,7 @@ pub mod figures {
     pub mod grid;
 }
 pub mod primitives {
+    pub mod dot;
     pub mod line;
     pub mod point;
 }

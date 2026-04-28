@@ -1,8 +1,9 @@
 use crate::backend::crystal::{Crystal, CrystalSize};
 use crate::graphics::Viewport;
+use crate::graphics::primitives::dot::Dot;
 use crate::graphics::primitives::point::Point;
-use egui::epaint::CircleShape;
-use egui::{Color32, Pos2, Shape, Stroke};
+use crate::graphics::units::Centimeter;
+use egui::{Color32, Shape};
 
 #[derive(Debug, Clone)]
 pub struct CrystalSnapshot {
@@ -39,16 +40,15 @@ impl CrystalSnapshot {
             let x = id % self.size.width;
             let y = id / self.size.width;
 
-            let point = Point::new(x as f64, y as f64);
-
-            let circle = CircleShape {
-                center: Pos2::from(point.to_pixels(viewport)),
-                radius: 2.0,
+            let dot = Dot {
+                center: Point::new(x as f64, y as f64),
+                radius: Centimeter(0.3),
                 fill: self.coloring(count),
-                stroke: Stroke::new(1.0, Color32::BLACK),
+                stroke_color: Color32::BLACK,
+                stroke_width: Centimeter(0.05),
             };
 
-            shapes.push(Shape::Circle(circle));
+            shapes.push(dot.into_shape(viewport));
         }
 
         shapes
