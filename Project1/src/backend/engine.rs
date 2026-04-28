@@ -11,7 +11,7 @@ pub struct Engine {
 
     pub ui_commands_rx: Receiver<UiCommand>,
     pub events_tx: Sender<EngineEvent>,
-    pub errors_tx: Sender<ErrorModal>,
+    pub _errors_tx: Sender<ErrorModal>,
 }
 
 impl Engine {
@@ -23,7 +23,7 @@ impl Engine {
             simulation: None,
             ui_commands_rx: commands,
             events_tx: events,
-            errors_tx: errors,
+            _errors_tx: errors,
         }
     }
 
@@ -58,6 +58,18 @@ impl Engine {
                 // ALGORITHM PASSING (IMPORTANT)
                 simulation.tick();
 
+                let snapshot_data = simulation
+                    .crystal
+                    .field
+                    .iter()
+                    .map(|c| c.load(std::sync::atomic::Ordering::Relaxed))
+                    .collect();
+
+                let snapshot = CrystalSnapshot::new(snapshot_data);
+                let _ = self
+                    .events_tx
+                    .send(EngineEvent::AlgorithmPassed(snapshot.clone()));
+
                 // Delay
                 if simulation.settings.delay_ms > 0 {
                     std::thread::sleep(Duration::from_millis(
@@ -74,14 +86,6 @@ impl Engine {
                         // Pass
                     },
                     _ => {
-                        let snapshot_data = simulation
-                            .crystal
-                            .field
-                            .iter()
-                            .map(|c| c.load(std::sync::atomic::Ordering::Relaxed))
-                            .collect();
-
-                        let snapshot = CrystalSnapshot::new(snapshot_data);
                         let _ = self.events_tx.send(EngineEvent::Snapshot(snapshot));
                         last_snapshot_taken_at = Some(Instant::now());
                     },
