@@ -48,8 +48,4 @@ impl Border {
         self.m = size.width;
         self.n = size.height;
     }
-
-    pub fn reset(&mut self) {
-        *self = Self::default();
-    }
 }

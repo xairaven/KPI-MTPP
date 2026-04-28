@@ -39,7 +39,7 @@ impl Engine {
                         is_running = true;
                         last_snapshot_taken_at = None;
                     },
-                    UiCommand::StopSimulation | UiCommand::ParameterUpdated => {
+                    UiCommand::StopSimulation => {
                         is_running = false;
                         last_snapshot_taken_at = None;
                     },

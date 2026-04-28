@@ -1,3 +1,4 @@
+use crate::backend::commands::EngineEvent;
 use crate::config::Config;
 use crate::context::Context;
 use crate::ui::modals::ModalsHandler;
@@ -38,6 +39,23 @@ impl eframe::App for AppCreator {
 
             self.modals_handler.handle_errors(ui, &self.context);
         });
+
+        // Engine event handling
+        while let Ok(event) = self.context.engine_event_rx.try_recv() {
+            match event {
+                EngineEvent::AlgorithmPassed(_) => {
+                    todo!()
+                },
+                EngineEvent::Snapshot(snapshot) => {
+                    todo!()
+                    // self.context.ui_state.simulation_visualizer.update_snapshot(snapshot);
+                    // ui.ctx().request_repaint();
+                },
+                EngineEvent::SimulationFinished => {
+                    self.context.ui_state.player.reset();
+                },
+            }
+        }
 
         if self.context.performance_monitor.update().is_err() {
             ui.close();

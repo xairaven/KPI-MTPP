@@ -141,7 +141,7 @@ impl SettingsComponent {
                     .speed(1)
                     .range(simulation::ranges::BORDER)
                     .tx(commands_tx.clone())
-                    .command(UiCommand::ParameterUpdated)
+                    .command(UiCommand::StopSimulation)
                     .show(ui);
                 ui.end_row();
 
@@ -150,7 +150,7 @@ impl SettingsComponent {
                     .speed(1)
                     .range(simulation::ranges::BORDER)
                     .tx(commands_tx.clone())
-                    .command(UiCommand::ParameterUpdated)
+                    .command(UiCommand::StopSimulation)
                     .show(ui);
                 ui.end_row();
 
@@ -159,7 +159,7 @@ impl SettingsComponent {
                     .speed(1)
                     .range(simulation::ranges::ATOMS_AMOUNT)
                     .tx(commands_tx.clone())
-                    .command(UiCommand::ParameterUpdated)
+                    .command(UiCommand::StopSimulation)
                     .show(ui);
                 ui.end_row();
 
@@ -169,7 +169,7 @@ impl SettingsComponent {
                     .range(simulation::ranges::SAMPLING)
                     .suffix(" sec.")
                     .tx(commands_tx.clone())
-                    .command(UiCommand::ParameterUpdated)
+                    .command(UiCommand::StopSimulation)
                     .show(ui);
                 ui.end_row();
 
@@ -178,7 +178,7 @@ impl SettingsComponent {
                     .speed(1)
                     .suffix(" ms.")
                     .tx(commands_tx.clone())
-                    .command(UiCommand::ParameterUpdated)
+                    .command(UiCommand::StopSimulation)
                     .show(ui);
                 ui.end_row();
 
@@ -204,14 +204,14 @@ impl SettingsComponent {
                 .speed(1)
                 .range(simulation::ranges::TIME)
                 .tx(commands_tx.clone())
-                .command(UiCommand::ParameterUpdated)
+                .command(UiCommand::StopSimulation)
                 .show(ui);
             ui.label(":");
             DragValueNotifiable::new(&mut settings.time_seconds)
                 .speed(1)
                 .range(simulation::ranges::TIME)
                 .tx(commands_tx.clone())
-                .command(UiCommand::ParameterUpdated)
+                .command(UiCommand::StopSimulation)
                 .show(ui);
         });
 
@@ -229,7 +229,7 @@ impl SettingsComponent {
                     .speed(0.01)
                     .range(simulation::ranges::MOVEMENT_PROBABILITY)
                     .tx(commands_tx.clone())
-                    .command(UiCommand::ParameterUpdated)
+                    .command(UiCommand::StopSimulation)
                     .show(ui);
                 ui.end_row();
 
@@ -238,7 +238,7 @@ impl SettingsComponent {
                     .speed(0.01)
                     .range(simulation::ranges::MOVEMENT_PROBABILITY)
                     .tx(commands_tx.clone())
-                    .command(UiCommand::ParameterUpdated)
+                    .command(UiCommand::StopSimulation)
                     .show(ui);
                 ui.end_row();
 
@@ -247,7 +247,7 @@ impl SettingsComponent {
                     .speed(0.01)
                     .range(simulation::ranges::MOVEMENT_PROBABILITY)
                     .tx(commands_tx.clone())
-                    .command(UiCommand::ParameterUpdated)
+                    .command(UiCommand::StopSimulation)
                     .show(ui);
                 ui.end_row();
 
@@ -256,7 +256,7 @@ impl SettingsComponent {
                     .speed(0.01)
                     .range(simulation::ranges::MOVEMENT_PROBABILITY)
                     .tx(commands_tx.clone())
-                    .command(UiCommand::ParameterUpdated)
+                    .command(UiCommand::StopSimulation)
                     .show(ui);
                 ui.end_row();
             });

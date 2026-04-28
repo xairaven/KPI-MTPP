@@ -47,6 +47,11 @@ impl Player {
             ViewMode::RealTime(visualizer) => visualizer.visualize(viewport),
         }
     }
+
+    pub fn reset(&mut self) {
+        let player = Self::new(self.command_tx.clone());
+        *self = player;
+    }
 }
 
 #[derive(Debug, Default, Clone, PartialEq)]
