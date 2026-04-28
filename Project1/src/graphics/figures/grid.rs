@@ -55,6 +55,7 @@ impl Default for Grid2DBuilder {
     }
 }
 
+#[allow(dead_code)]
 impl Grid2DBuilder {
     pub fn with_origin(mut self, origin: Point) -> Self {
         self.origin = origin;

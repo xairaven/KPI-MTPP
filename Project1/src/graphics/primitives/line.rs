@@ -13,6 +13,7 @@ where
     pub stroke: Stroke,
 }
 
+#[allow(dead_code)]
 impl<T> Line<T>
 where
     T: Pointable2D,
@@ -60,6 +61,7 @@ impl Line<Point> {
 }
 
 impl Line<PointPixel> {
+    #[allow(dead_code)]
     pub fn to_centimeters(self, viewport: &Viewport) -> Line<Point> {
         Line {
             start: self.start.to_centimeters(viewport),
