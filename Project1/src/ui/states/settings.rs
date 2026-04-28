@@ -47,8 +47,8 @@ impl Default for SimulationSettingsUi {
         Self {
             atoms_amount: 100,
             time_minutes: 0,
-            time_seconds: 0,
-            delay_ms: 0,
+            time_seconds: 10,
+            delay_ms: 500,
             sampling_period_seconds: 1.0,
 
             probability_up: 0.0,

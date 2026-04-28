@@ -30,6 +30,7 @@ impl Engine {
     pub fn run(&mut self) {
         let mut is_running = false;
         let mut last_snapshot_taken_at: Option<Instant> = None;
+        let mut last_realtime_sent_at = Instant::now();
 
         loop {
             while let Ok(command) = self.ui_commands_rx.try_recv() {
@@ -59,9 +60,13 @@ impl Engine {
                 simulation.tick();
 
                 let snapshot = CrystalSnapshot::new(&simulation.crystal);
-                let _ = self
-                    .events_tx
-                    .send(EngineEvent::AlgorithmPassed(snapshot.clone()));
+                if last_realtime_sent_at.elapsed().as_millis() >= 16 {
+                    let _ = self
+                        .events_tx
+                        .send(EngineEvent::AlgorithmPassed(snapshot.clone()));
+
+                    last_realtime_sent_at = Instant::now();
+                }
 
                 // Delay
                 if simulation.settings.delay_ms > 0 {
