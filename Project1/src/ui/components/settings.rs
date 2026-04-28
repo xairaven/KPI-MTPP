@@ -269,6 +269,14 @@ impl SettingsComponent {
                 );
             });
         }
+
+        ui.add_space(5.0);
+
+        ui.vertical_centered_justified(|ui| {
+            if ui.button("Generate Probabilities").clicked() {
+                settings.generate_random_probabilities();
+            }
+        });
     }
 
     fn simulation_player(&self, ui: &mut egui::Ui, context: &mut Context) {

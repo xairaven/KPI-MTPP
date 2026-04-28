@@ -40,6 +40,31 @@ impl SimulationSettingsUi {
         let mut rng = rand::rng();
         self.seed = rng.random_range(0..usize::MAX).to_string();
     }
+
+    pub fn generate_random_probabilities(&mut self) {
+        let mut rng = rand::rng();
+
+        // Generating 3 cut points on the segment from 0 to 100
+        let mut cuts = [
+            rng.random_range(0..=100),
+            rng.random_range(0..=100),
+            rng.random_range(0..=100),
+        ];
+
+        // Sorting the cut points to ensure they are in the correct order
+        cuts.sort_unstable();
+
+        // Calculating the length of each of the 4 segments formed by the cut points
+        let p_up = cuts[0];
+        let p_down = cuts[1] - cuts[0];
+        let p_left = cuts[2] - cuts[1];
+        let p_right = 100 - cuts[2];
+
+        self.probability_up = p_up as f64 / 100.0;
+        self.probability_down = p_down as f64 / 100.0;
+        self.probability_left = p_left as f64 / 100.0;
+        self.probability_right = p_right as f64 / 100.0;
+    }
 }
 
 impl Default for SimulationSettingsUi {
