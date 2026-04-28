@@ -60,6 +60,6 @@ impl eframe::App for AppCreator {
         if self.context.performance_monitor.update().is_err() {
             ui.close();
         }
-        ui.request_repaint_after(std::time::Duration::from_secs(1));
+        ui.request_repaint();
     }
 }
