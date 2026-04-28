@@ -55,7 +55,8 @@ impl Engine {
                     continue;
                 }
 
-                // TODO: Tick
+                // ALGORITHM PASSING (IMPORTANT)
+                simulation.tick();
 
                 // Delay
                 if simulation.settings.delay_ms > 0 {
