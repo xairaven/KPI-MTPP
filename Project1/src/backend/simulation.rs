@@ -11,7 +11,7 @@ pub struct Simulation {
 
 impl Simulation {
     pub fn new(settings: SimulationSettings) -> Self {
-        let crystal = Crystal::new(settings.atoms_amount, settings.crystal_size.clone());
+        let crystal = Crystal::new(&settings);
         let start_time = Instant::now();
 
         Self {

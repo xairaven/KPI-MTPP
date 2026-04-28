@@ -1,3 +1,6 @@
+use crate::backend::simulation::SimulationSettings;
+use rand::SeedableRng;
+use rand::rngs::SmallRng;
 use std::sync::atomic::AtomicUsize;
 
 #[derive(Debug)]
@@ -9,14 +12,27 @@ pub struct Crystal {
 }
 
 impl Crystal {
-    pub fn new(atoms_amount: usize, size: CrystalSize) -> Self {
+    pub fn new(settings: &SimulationSettings) -> Self {
+        let size = settings.crystal_size.clone();
+
         let initial_x = size.width / 2;
         let initial_y = size.height / 2;
 
-        let atoms = (0..atoms_amount)
-            .map(|_| Atom {
-                x: initial_x,
-                y: initial_y,
+        let base_seed = settings.seed.unwrap_or_else(rand::random);
+
+        let atoms = (0..settings.atoms_amount)
+            .map(|id| {
+                // Unique atom seed
+                let atom_seed = base_seed.wrapping_add(id as u64);
+                // Generator for random
+                let rng = SmallRng::seed_from_u64(atom_seed);
+
+                Atom {
+                    rng,
+                    id,
+                    x: initial_x,
+                    y: initial_y,
+                }
             })
             .collect();
 
@@ -36,22 +52,12 @@ impl Crystal {
     }
 }
 
-impl Default for Crystal {
-    fn default() -> Self {
-        Crystal::new(
-            50,
-            CrystalSize {
-                width: 10,
-                height: 10,
-            },
-        )
-    }
-}
-
 #[derive(Debug, Clone)]
 pub struct Atom {
+    pub id: usize,
     pub x: usize,
     pub y: usize,
+    pub rng: SmallRng,
 }
 
 #[derive(Debug, Clone)]
