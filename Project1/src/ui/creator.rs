@@ -43,11 +43,11 @@ impl eframe::App for AppCreator {
         // Engine event handling
         while let Ok(event) = self.context.engine_event_rx.try_recv() {
             match event {
-                EngineEvent::AlgorithmPassed(_) => {
-                    todo!()
+                EngineEvent::AlgorithmPassed(snapshot) => {
+                    self.context.ui_state.player.pass_real_snapshot(snapshot);
                 },
                 EngineEvent::Snapshot(snapshot) => {
-                    todo!()
+                    // TODO: ...
                     // self.context.ui_state.simulation_visualizer.update_snapshot(snapshot);
                     // ui.ctx().request_repaint();
                 },

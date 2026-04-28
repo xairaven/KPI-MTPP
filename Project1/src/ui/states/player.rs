@@ -1,5 +1,6 @@
 use crate::backend::commands::UiCommand;
 use crate::backend::simulation::SimulationSettings;
+use crate::backend::snapshot::CrystalSnapshot;
 use crate::graphics::Viewport;
 use crate::graphics::figures::border::Border;
 use crossbeam::channel::Sender;
@@ -48,6 +49,12 @@ impl Player {
         }
     }
 
+    pub fn pass_real_snapshot(&mut self, snapshot: CrystalSnapshot) {
+        if let ViewMode::RealTime(realtime) = &mut self.mode_player {
+            realtime.update_snapshot(snapshot);
+        }
+    }
+
     pub fn reset(&mut self) {
         let player = Self::new(self.command_tx.clone());
         *self = player;
@@ -79,6 +86,7 @@ pub enum ViewMode {
 #[derive(Debug)]
 pub struct RealTimeVisualizer {
     pub is_enabled: bool,
+    last_snapshot: Option<CrystalSnapshot>,
     start_time: Option<Instant>,
 
     border: Border,
@@ -90,6 +98,7 @@ impl RealTimeVisualizer {
     pub fn new(ui_tx: Sender<UiCommand>) -> Self {
         Self {
             is_enabled: false,
+            last_snapshot: None,
             start_time: None,
             border: Default::default(),
             ui_tx,
@@ -99,6 +108,7 @@ impl RealTimeVisualizer {
     pub fn start(&mut self, settings: &SimulationSettings) {
         self.is_enabled = true;
         self.start_time = Some(Instant::now());
+        self.last_snapshot = None;
         self.border.resize(&settings.crystal_size);
 
         let _ = self
@@ -109,6 +119,10 @@ impl RealTimeVisualizer {
     pub fn stop(&mut self) {
         self.reset();
         let _ = self.ui_tx.try_send(UiCommand::StopSimulation);
+    }
+
+    pub fn update_snapshot(&mut self, snapshot: CrystalSnapshot) {
+        self.last_snapshot = Some(snapshot);
     }
 
     pub fn time(&self) -> String {
@@ -125,7 +139,11 @@ impl RealTimeVisualizer {
         }
     }
 
-    pub fn visualize(&self, viewport: &Viewport) -> Vec<Shape> {
+    pub fn total_atoms(&self) -> &Option<CrystalSnapshot> {
+        &self.last_snapshot
+    }
+
+    pub fn visualize(&mut self, viewport: &Viewport) -> Vec<Shape> {
         if !self.is_enabled {
             return vec![];
         }
@@ -139,6 +157,11 @@ impl RealTimeVisualizer {
             .map(|line| line.to_pixels(viewport).to_shape())
             .collect::<Vec<Shape>>();
         shapes.extend(border);
+
+        if let Some(snapshot) = &self.last_snapshot {
+            let shape = snapshot.shapes(viewport);
+            shapes.extend(shape);
+        }
 
         shapes
     }

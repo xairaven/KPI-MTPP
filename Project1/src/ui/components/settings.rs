@@ -322,6 +322,13 @@ impl SettingsComponent {
             ui.end_row();
             ui.label("Time:");
             ui.label(visualizer.time());
+            ui.end_row();
+
+            if let Some(snapshot) = visualizer.total_atoms() {
+                ui.label("Total Atoms:");
+                ui.label(snapshot.total_atoms.to_string());
+                ui.end_row();
+            }
         });
 
         ui.vertical_centered_justified(|ui| match visualizer.is_enabled {

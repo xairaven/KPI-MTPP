@@ -1,48 +1,77 @@
-use std::collections::VecDeque;
-
-#[derive(Debug, Default)]
-pub struct SnapshotStorage {
-    real_time_snaps: VecDeque<CrystalSnapshot>,
-    user_snaps: Vec<CrystalSnapshot>,
-    current: Option<usize>,
-}
-
-impl SnapshotStorage {
-    pub fn last_realtime(&mut self) -> Option<CrystalSnapshot> {
-        let result = self.real_time_snaps.pop_back();
-
-        self.real_time_snaps.clear();
-
-        result
-    }
-
-    pub fn add_user_snapshot(&mut self, crystal: CrystalSnapshot) {
-        self.user_snaps.push(crystal);
-    }
-
-    pub fn current_user_snapshot(&self) -> Option<&CrystalSnapshot> {
-        let current = self.current?;
-
-        self.user_snaps.get(current)
-    }
-
-    pub fn clear_user_snapshots(&mut self) {
-        self.current = None;
-        self.user_snaps.clear();
-    }
-}
+use crate::backend::crystal::{Crystal, CrystalSize};
+use crate::graphics::Viewport;
+use crate::graphics::primitives::point::Point;
+use egui::epaint::CircleShape;
+use egui::{Color32, Pos2, Shape, Stroke};
 
 #[derive(Debug, Clone)]
 pub struct CrystalSnapshot {
     pub field: Vec<usize>,
+    pub size: CrystalSize,
     pub total_atoms: usize,
 }
 
 impl CrystalSnapshot {
-    pub fn new(field: Vec<usize>) -> Self {
+    pub fn new(crystal: &Crystal) -> Self {
+        let field: Vec<usize> = crystal
+            .field
+            .iter()
+            .map(|c| c.load(std::sync::atomic::Ordering::Relaxed))
+            .collect();
+        let total_atoms = field.iter().sum();
+        let size = crystal.size.clone();
+
         Self {
-            total_atoms: field.iter().sum(),
             field,
+            total_atoms,
+            size,
         }
+    }
+
+    pub fn shapes(&self, viewport: &Viewport) -> Vec<Shape> {
+        let mut shapes = vec![];
+
+        for (id, &count) in self.field.iter().enumerate() {
+            if count == 0 {
+                continue;
+            }
+
+            let x = id % self.size.width;
+            let y = id / self.size.width;
+
+            let point = Point::new(x as f64, y as f64);
+
+            let circle = CircleShape {
+                center: Pos2::from(point.to_pixels(viewport)),
+                radius: 2.0,
+                fill: self.coloring(count),
+                stroke: Stroke::new(1.0, Color32::BLACK),
+            };
+
+            shapes.push(Shape::Circle(circle));
+        }
+
+        shapes
+    }
+
+    fn coloring(&self, count: usize) -> Color32 {
+        if count == 0 {
+            // If atom is clear -> then color is transparent.
+            return Color32::TRANSPARENT;
+        }
+
+        // Uniform distribution: the ratio of atoms in a cell to their total number .max(1)
+        // ensures that we never divide by zero (even if total_atoms = 0)
+        let intensity = count as f32 / self.total_atoms.max(1) as f32;
+
+        // Forming RGB gradient (Blue -> Green -> Red)
+        // If intensity ~ 0.0 (few atoms), color will be pure blue
+        // If intensity = 0.5 (50% of all atoms), color will be light green
+        // If intensity = 1.0 (100% of atoms in this cell), color will be pure red
+        let r = (255.0 * intensity) as u8;
+        let b = (255.0 * (1.0 - intensity)) as u8;
+        let g = (255.0 * (1.0 - (intensity * 2.0 - 1.0).abs())) as u8;
+
+        Color32::from_rgb(r, g, b)
     }
 }

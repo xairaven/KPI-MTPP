@@ -58,14 +58,7 @@ impl Engine {
                 // ALGORITHM PASSING (IMPORTANT)
                 simulation.tick();
 
-                let snapshot_data = simulation
-                    .crystal
-                    .field
-                    .iter()
-                    .map(|c| c.load(std::sync::atomic::Ordering::Relaxed))
-                    .collect();
-
-                let snapshot = CrystalSnapshot::new(snapshot_data);
+                let snapshot = CrystalSnapshot::new(&simulation.crystal);
                 let _ = self
                     .events_tx
                     .send(EngineEvent::AlgorithmPassed(snapshot.clone()));
