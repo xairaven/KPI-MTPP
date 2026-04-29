@@ -198,6 +198,11 @@ impl SettingsComponent {
                             BugMode::Deadlock,
                             "Deadlock",
                         );
+                        ui.selectable_value(
+                            &mut settings.bug_mode,
+                            BugMode::OneThreadPerAtom,
+                            "1 Atom = 1 Thread",
+                        );
                     });
                 ui.end_row();
 

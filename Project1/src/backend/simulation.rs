@@ -29,15 +29,14 @@ impl Simulation {
 
     pub fn tick(&mut self) {
         match &self.settings.bug_mode {
-            BugMode::RaceCondition => {
-                bugs::tick_race_condition(self);
-                return;
-            },
-            BugMode::Deadlock => {
-                bugs::tick_deadlock(self);
-                return;
-            },
+            BugMode::RaceCondition => bugs::tick_race_condition(self),
+            BugMode::Deadlock => bugs::tick_deadlock(self),
+            BugMode::OneThreadPerAtom => bugs::tick_one_thread_per_atom(self),
             BugMode::None => {},
+        }
+
+        if !matches!(self.settings.bug_mode, BugMode::None) {
+            return;
         }
 
         // Using new variables for shortening this big names.. oh
