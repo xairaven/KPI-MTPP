@@ -47,9 +47,7 @@ impl eframe::App for AppCreator {
                     self.context.ui_state.player.pass_real_snapshot(snapshot);
                 },
                 EngineEvent::Snapshot(snapshot) => {
-                    // TODO: ...
-                    // self.context.ui_state.simulation_visualizer.update_snapshot(snapshot);
-                    // ui.ctx().request_repaint();
+                    self.context.ui_state.player.history.add(snapshot);
                 },
                 EngineEvent::SimulationFinished => {
                     self.context.ui_state.player.reset();

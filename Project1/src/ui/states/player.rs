@@ -9,49 +9,33 @@ use std::time::Instant;
 
 #[derive(Debug)]
 pub struct Player {
-    pub mode: ViewModeId,
-    pub mode_player: ViewMode,
+    pub mode: ViewMode,
+    pub real_time: RealTimeVisualizer,
+    pub history: SnapshotStorage,
+
     pub command_tx: Sender<UiCommand>,
 }
 
 impl Player {
     pub fn new(command_tx: Sender<UiCommand>) -> Self {
-        let mode = ViewModeId::default();
-        let mode_player = match &mode {
-            ViewModeId::RealTime => {
-                ViewMode::RealTime(RealTimeVisualizer::new(command_tx.clone()))
-            },
-            ViewModeId::Snapshot => ViewMode::Snapshot,
-        };
-
         Self {
-            mode,
-            mode_player,
+            mode: Default::default(),
+            real_time: RealTimeVisualizer::new(command_tx.clone()),
+            history: Default::default(),
             command_tx,
         }
     }
 
-    pub fn change_mode(&mut self) {
-        self.mode_player = match self.mode {
-            ViewModeId::RealTime => {
-                ViewMode::RealTime(RealTimeVisualizer::new(self.command_tx.clone()))
-            },
-            ViewModeId::Snapshot => ViewMode::Snapshot,
-        };
-    }
-
     pub fn visualize(&mut self, viewport: &Viewport) -> Vec<Shape> {
-        match &mut self.mode_player {
-            ViewMode::Snapshot => {
-                todo!()
-            },
-            ViewMode::RealTime(visualizer) => visualizer.visualize(viewport),
+        match self.mode {
+            ViewMode::RealTime => self.real_time.visualize(viewport),
+            ViewMode::Snapshot => self.history.visualize(viewport),
         }
     }
 
     pub fn pass_real_snapshot(&mut self, snapshot: CrystalSnapshot) {
-        if let ViewMode::RealTime(realtime) = &mut self.mode_player {
-            realtime.update_snapshot(snapshot);
+        if self.mode == ViewMode::RealTime {
+            self.real_time.update_snapshot(snapshot);
         }
     }
 
@@ -62,25 +46,19 @@ impl Player {
 }
 
 #[derive(Debug, Default, Clone, PartialEq)]
-pub enum ViewModeId {
+pub enum ViewMode {
     #[default]
     RealTime,
     Snapshot,
 }
 
-impl std::fmt::Display for ViewModeId {
+impl std::fmt::Display for ViewMode {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Self::RealTime => write!(f, "Real Time"),
             Self::Snapshot => write!(f, "Snapshot"),
         }
     }
-}
-
-#[derive(Debug)]
-pub enum ViewMode {
-    Snapshot,
-    RealTime(RealTimeVisualizer),
 }
 
 #[derive(Debug)]
@@ -139,8 +117,10 @@ impl RealTimeVisualizer {
         }
     }
 
-    pub fn total_atoms(&self) -> &Option<CrystalSnapshot> {
-        &self.last_snapshot
+    pub fn total_atoms(&self) -> Option<usize> {
+        self.last_snapshot
+            .as_ref()
+            .map(|snapshot| snapshot.total_atoms)
     }
 
     pub fn visualize(&mut self, viewport: &Viewport) -> Vec<Shape> {
@@ -159,8 +139,8 @@ impl RealTimeVisualizer {
         shapes.extend(border);
 
         if let Some(snapshot) = &self.last_snapshot {
-            let shape = snapshot.shapes(viewport);
-            shapes.extend(shape);
+            let atoms = snapshot.shapes(viewport);
+            shapes.extend(atoms);
         }
 
         shapes
@@ -168,5 +148,84 @@ impl RealTimeVisualizer {
 
     pub fn reset(&mut self) {
         *self = Self::new(self.ui_tx.clone());
+    }
+}
+
+#[derive(Debug, Default, Clone)]
+pub struct SnapshotStorage {
+    storage: Vec<CrystalSnapshot>,
+    current: Option<usize>,
+}
+
+impl SnapshotStorage {
+    pub fn add(&mut self, snapshot: CrystalSnapshot) {
+        self.storage.push(snapshot);
+        if self.len() == 1 {
+            self.current = Some(0);
+        }
+    }
+
+    pub fn get(&self, index: usize) -> Option<&CrystalSnapshot> {
+        self.storage.get(index)
+    }
+
+    pub fn current_index(&self) -> &Option<usize> {
+        &self.current
+    }
+
+    pub fn left(&mut self) {
+        if let Some(index) = &mut self.current
+            && *index > 0usize
+        {
+            *index -= 1usize;
+        }
+    }
+
+    pub fn right(&mut self) {
+        let len = self.storage.len();
+        if let Some(index) = &mut self.current
+            && *index < (len - 1)
+        {
+            *index += 1usize;
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.storage.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.storage.is_empty()
+    }
+
+    pub fn clear(&mut self) {
+        self.current = None;
+        self.storage.clear();
+    }
+
+    pub fn visualize(&mut self, viewport: &Viewport) -> Vec<Shape> {
+        let snapshot = if let Some(index) = self.current_index()
+            && let Some(snapshot) = self.get(*index)
+        {
+            snapshot
+        } else {
+            return vec![];
+        };
+
+        let mut shapes = Vec::new();
+
+        let mut border = Border::default();
+        border.resize(&snapshot.size);
+        let border = border
+            .lines()
+            .iter()
+            .map(|line| line.to_pixels(viewport).to_shape())
+            .collect::<Vec<Shape>>();
+        shapes.extend(border);
+
+        let atoms = snapshot.shapes(viewport);
+        shapes.extend(atoms);
+
+        shapes
     }
 }

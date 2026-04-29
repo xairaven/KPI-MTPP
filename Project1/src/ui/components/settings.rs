@@ -5,9 +5,9 @@ use crate::context::Context;
 use crate::graphics;
 use crate::ui::controls::drag_value::DragValueNotifiable;
 use crate::ui::modals::error::ErrorModal;
-use crate::ui::states::player::{ViewMode, ViewModeId};
+use crate::ui::states::player::ViewMode;
 use eframe::epaint::Color32;
-use egui::{DragValue, Grid, Panel, RichText, ScrollArea, TextEdit};
+use egui::{Button, DragValue, Grid, Panel, RichText, ScrollArea, TextEdit};
 
 #[derive(Debug)]
 pub struct SettingsComponent {
@@ -285,41 +285,27 @@ impl SettingsComponent {
 
         Grid::new("Player").num_columns(3).show(ui, |ui| {
             ui.label("Mode:");
-            if egui::ComboBox::from_label("")
+            egui::ComboBox::from_label("")
                 .selected_text(player.mode.to_string())
                 .show_ui(ui, |ui| {
                     ui.selectable_value(
                         &mut player.mode,
-                        ViewModeId::RealTime,
+                        ViewMode::RealTime,
                         "Real-Time",
                     );
-                    ui.selectable_value(
-                        &mut player.mode,
-                        ViewModeId::Snapshot,
-                        "Snapshot",
-                    );
-                })
-                .response
-                .changed()
-            {
-                player.change_mode();
-            };
+                    ui.selectable_value(&mut player.mode, ViewMode::Snapshot, "Snapshot");
+                });
             ui.end_row();
         });
 
         match player.mode {
-            ViewModeId::RealTime => self.realtime_mode(ui, context),
-            ViewModeId::Snapshot => self.snapshot_mode(ui, context),
+            ViewMode::RealTime => self.realtime_mode(ui, context),
+            ViewMode::Snapshot => self.snapshot_mode(ui, context),
         }
     }
 
     fn realtime_mode(&self, ui: &mut egui::Ui, context: &mut Context) {
-        let visualizer =
-            if let ViewMode::RealTime(value) = &mut context.ui_state.player.mode_player {
-                value
-            } else {
-                return;
-            };
+        let visualizer = &mut context.ui_state.player.real_time;
 
         Grid::new("RealTimePlayer").num_columns(2).show(ui, |ui| {
             ui.label("Status:");
@@ -332,9 +318,9 @@ impl SettingsComponent {
             ui.label(visualizer.time());
             ui.end_row();
 
-            if let Some(snapshot) = visualizer.total_atoms() {
+            if let Some(atoms_amount) = visualizer.total_atoms() {
                 ui.label("Total Atoms:");
-                ui.label(snapshot.total_atoms.to_string());
+                ui.label(atoms_amount.to_string());
                 ui.end_row();
             }
         });
@@ -363,12 +349,45 @@ impl SettingsComponent {
     }
 
     fn snapshot_mode(&self, ui: &mut egui::Ui, context: &mut Context) {
-        let _visualizer = if let ViewMode::Snapshot = &context.ui_state.player.mode_player
-        {
-            todo!()
+        let visualizer = &mut context.ui_state.player.history;
+
+        if visualizer.is_empty() {
+            ui.label(RichText::new("No snapshots available").color(Color32::YELLOW));
+            return;
+        }
+
+        let current_index = if let Some(value) = visualizer.current_index() {
+            *value
         } else {
             return;
         };
+
+        ui.horizontal(|ui| {
+            if ui
+                .add_enabled(current_index > 0, Button::new("<"))
+                .clicked()
+            {
+                visualizer.left();
+            };
+            ui.label(format!("{} / {}", current_index + 1, visualizer.len()));
+            if ui
+                .add_enabled(current_index < visualizer.len() - 1, Button::new(">"))
+                .clicked()
+            {
+                visualizer.right();
+            };
+            if ui.button("Clear").clicked() {
+                visualizer.clear();
+            }
+        });
+
+        let snapshot = if let Some(value) = visualizer.get(current_index) {
+            value
+        } else {
+            return;
+        };
+
+        ui.label(format!("Total atoms: {}", snapshot.total_atoms));
     }
 
     fn separator(&self, ui: &mut egui::Ui) {
