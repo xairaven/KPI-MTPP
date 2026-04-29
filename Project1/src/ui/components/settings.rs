@@ -277,6 +277,14 @@ impl SettingsComponent {
                 settings.generate_random_probabilities();
             }
         });
+
+        ui.add_space(5.0);
+
+        ui.vertical_centered_justified(|ui| {
+            if ui.button("Reset Probabilities").clicked() {
+                settings.reset_probabilities();
+            }
+        });
     }
 
     fn simulation_player(&self, ui: &mut egui::Ui, context: &mut Context) {
@@ -305,30 +313,30 @@ impl SettingsComponent {
     }
 
     fn realtime_mode(&self, ui: &mut egui::Ui, context: &mut Context) {
-        let visualizer = &mut context.ui_state.player.real_time;
+        let player = &mut context.ui_state.player;
 
         Grid::new("RealTimePlayer").num_columns(2).show(ui, |ui| {
             ui.label("Status:");
-            ui.label(match visualizer.is_enabled {
+            ui.label(match player.real_time.is_enabled {
                 true => RichText::new("Running").color(Color32::GREEN),
                 false => RichText::new("Stopped").color(Color32::RED),
             });
             ui.end_row();
             ui.label("Time:");
-            ui.label(visualizer.time());
+            ui.label(player.real_time.time());
             ui.end_row();
 
-            if let Some(atoms_amount) = visualizer.total_atoms() {
+            if let Some(atoms_amount) = player.real_time.total_atoms() {
                 ui.label("Total Atoms:");
                 ui.label(atoms_amount.to_string());
                 ui.end_row();
             }
         });
 
-        ui.vertical_centered_justified(|ui| match visualizer.is_enabled {
+        ui.vertical_centered_justified(|ui| match player.real_time.is_enabled {
             true => {
                 if ui.button("Stop").clicked() {
-                    visualizer.stop();
+                    player.real_time.stop();
                 }
             },
             false => {
@@ -336,7 +344,10 @@ impl SettingsComponent {
                     let settings: Result<SimulationSettings, SimulationError> =
                         context.ui_state.simulation_settings.clone().try_into();
                     match settings {
-                        Ok(settings) => visualizer.start(&settings),
+                        Ok(settings) => {
+                            player.reset();
+                            player.real_time.start(&settings);
+                        },
                         Err(err) => {
                             let _ = context
                                 .error_modals_tx

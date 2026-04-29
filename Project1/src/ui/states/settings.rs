@@ -65,6 +65,13 @@ impl SimulationSettingsUi {
         self.probability_left = p_left as f64 / 100.0;
         self.probability_right = p_right as f64 / 100.0;
     }
+
+    pub fn reset_probabilities(&mut self) {
+        self.probability_up = 0.0;
+        self.probability_down = 0.0;
+        self.probability_left = 0.0;
+        self.probability_right = 0.0;
+    }
 }
 
 impl Default for SimulationSettingsUi {

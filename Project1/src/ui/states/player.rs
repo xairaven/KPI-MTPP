@@ -12,8 +12,6 @@ pub struct Player {
     pub mode: ViewMode,
     pub real_time: RealTimeVisualizer,
     pub history: SnapshotStorage,
-
-    pub command_tx: Sender<UiCommand>,
 }
 
 impl Player {
@@ -22,7 +20,6 @@ impl Player {
             mode: Default::default(),
             real_time: RealTimeVisualizer::new(command_tx.clone()),
             history: Default::default(),
-            command_tx,
         }
     }
 
@@ -40,8 +37,7 @@ impl Player {
     }
 
     pub fn reset(&mut self) {
-        let player = Self::new(self.command_tx.clone());
-        *self = player;
+        self.real_time.reset();
     }
 }
 
