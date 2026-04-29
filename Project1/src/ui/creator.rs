@@ -50,7 +50,7 @@ impl eframe::App for AppCreator {
                     self.context.ui_state.player.history.add(snapshot);
                 },
                 EngineEvent::SimulationFinished => {
-                    self.context.ui_state.player.reset();
+                    self.context.ui_state.player.finish_real_time();
                 },
             }
         }

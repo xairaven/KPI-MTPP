@@ -345,7 +345,8 @@ impl SettingsComponent {
                         context.ui_state.simulation_settings.clone().try_into();
                     match settings {
                         Ok(settings) => {
-                            player.reset();
+                            player.finish_real_time();
+                            player.history.clear();
                             player.real_time.start(&settings);
                         },
                         Err(err) => {

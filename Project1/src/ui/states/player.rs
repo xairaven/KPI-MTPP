@@ -36,8 +36,8 @@ impl Player {
         }
     }
 
-    pub fn reset(&mut self) {
-        self.real_time.reset();
+    pub fn finish_real_time(&mut self) {
+        self.real_time.finish();
     }
 }
 
@@ -91,7 +91,7 @@ impl RealTimeVisualizer {
     }
 
     pub fn stop(&mut self) {
-        self.reset();
+        self.finish();
         let _ = self.ui_tx.try_send(UiCommand::StopSimulation);
     }
 
@@ -142,8 +142,9 @@ impl RealTimeVisualizer {
         shapes
     }
 
-    pub fn reset(&mut self) {
-        *self = Self::new(self.ui_tx.clone());
+    pub fn finish(&mut self) {
+        self.is_enabled = false;
+        self.start_time = None;
     }
 }
 
