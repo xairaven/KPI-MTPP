@@ -1,3 +1,4 @@
+use crate::backend::bugs;
 use crate::backend::bugs::BugMode;
 use crate::backend::crystal::{AtomMovementProbability, Crystal, CrystalSize};
 use rand::RngExt;
@@ -27,6 +28,18 @@ impl Simulation {
     }
 
     pub fn tick(&mut self) {
+        match &self.settings.bug_mode {
+            BugMode::RaceCondition => {
+                bugs::tick_race_condition(self);
+                return;
+            },
+            BugMode::Deadlock => {
+                bugs::tick_deadlock(self);
+                return;
+            },
+            BugMode::None => {},
+        }
+
         // Using new variables for shortening this big names.. oh
         let border = &self.settings.crystal_size;
         let field = &self.crystal.field;
