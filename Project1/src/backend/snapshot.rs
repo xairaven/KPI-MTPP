@@ -45,7 +45,7 @@ impl CrystalSnapshot {
                 text: format!("Dot [{}; {}].\nAtoms: {}.", x, y, count),
                 radius,
                 center,
-                id: count * x * y,
+                id,
             };
 
             let dot = Dot {
