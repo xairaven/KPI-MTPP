@@ -1,4 +1,5 @@
 use crate::context::Context;
+use crate::ui::states::player::DrawResponse;
 use egui::{CentralPanel, Color32, Frame, Painter, Response, Sense, Shape};
 
 #[derive(Debug, Default)]
@@ -13,18 +14,14 @@ impl CanvasComponent {
                     ui.input(|i| {
                         context.viewport.handle_scroll(i);
                     });
-                    let response = Self::pipeline(ui, context);
+                    let response = Self::draw(ui, context);
                     context.viewport.handle_pan(ui, response);
                 });
         });
     }
 
-    fn pipeline(ui: &mut egui::Ui, context: &mut Context) -> Response {
-        let shapes = Self::create_shapes(ui, context);
-        Self::draw(ui, context, shapes)
-    }
-
-    fn create_shapes(_ui: &mut egui::Ui, context: &mut Context) -> Vec<Shape> {
+    fn draw(ui: &mut egui::Ui, context: &mut Context) -> Response {
+        // Create shapes
         let mut shapes = vec![];
 
         let grid: Vec<Shape> = context
@@ -36,15 +33,17 @@ impl CanvasComponent {
             .collect::<Vec<Shape>>();
         shapes.extend(grid);
 
-        let simulation: Vec<Shape> = context.ui_state.player.visualize(&context.viewport);
-        shapes.extend(simulation);
+        let simulation: DrawResponse =
+            context.ui_state.player.visualize(&context.viewport);
+        shapes.extend(simulation.shapes);
 
-        shapes
-    }
-
-    fn draw(ui: &mut egui::Ui, context: &mut Context, shapes: Vec<Shape>) -> Response {
+        // Draw
         let (response, painter) = Self::initialize_painter(ui, context);
         painter.extend(shapes);
+
+        for tooltip in simulation.tooltips {
+            tooltip.show(ui, &response, &context.viewport);
+        }
 
         response
     }

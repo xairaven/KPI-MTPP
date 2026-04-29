@@ -1,9 +1,8 @@
 use crate::backend::crystal::{Crystal, CrystalSize};
-use crate::graphics::Viewport;
-use crate::graphics::primitives::dot::Dot;
+use crate::graphics::primitives::dot::{Dot, TooltipMetadata};
 use crate::graphics::primitives::point::Point;
 use crate::graphics::units::Centimeter;
-use egui::{Color32, Shape};
+use egui::Color32;
 
 #[derive(Debug, Clone)]
 pub struct CrystalSnapshot {
@@ -29,8 +28,8 @@ impl CrystalSnapshot {
         }
     }
 
-    pub fn shapes(&self, viewport: &Viewport) -> Vec<Shape> {
-        let mut shapes = vec![];
+    pub fn dots(&self) -> Vec<Dot> {
+        let mut dots = vec![];
 
         for (id, &count) in self.field.iter().enumerate() {
             if count == 0 {
@@ -40,18 +39,28 @@ impl CrystalSnapshot {
             let x = id % self.size.width;
             let y = id / self.size.width;
 
+            let center = Point::new(x as f64, y as f64);
+            let radius = Centimeter(0.3);
+            let tooltip_metadata = TooltipMetadata {
+                text: format!("Dot [{}; {}].\nAtoms: {}.", x, y, count),
+                radius,
+                center,
+                id: count * x * y,
+            };
+
             let dot = Dot {
-                center: Point::new(x as f64, y as f64),
-                radius: Centimeter(0.3),
+                center,
+                radius,
                 fill: self.coloring(count),
                 stroke_color: Color32::BLACK,
                 stroke_width: Centimeter(0.05),
+                tooltip: Some(tooltip_metadata),
             };
 
-            shapes.push(dot.into_shape(viewport));
+            dots.push(dot);
         }
 
-        shapes
+        dots
     }
 
     fn coloring(&self, count: usize) -> Color32 {

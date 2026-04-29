@@ -3,6 +3,7 @@ use crate::backend::simulation::SimulationSettings;
 use crate::backend::snapshot::CrystalSnapshot;
 use crate::graphics::Viewport;
 use crate::graphics::figures::border::Border;
+use crate::graphics::primitives::dot::TooltipMetadata;
 use crossbeam::channel::Sender;
 use egui::Shape;
 use std::time::Instant;
@@ -14,6 +15,12 @@ pub struct Player {
     pub history: SnapshotStorage,
 }
 
+#[derive(Debug, Default)]
+pub struct DrawResponse {
+    pub shapes: Vec<Shape>,
+    pub tooltips: Vec<TooltipMetadata>,
+}
+
 impl Player {
     pub fn new(command_tx: Sender<UiCommand>) -> Self {
         Self {
@@ -23,7 +30,7 @@ impl Player {
         }
     }
 
-    pub fn visualize(&mut self, viewport: &Viewport) -> Vec<Shape> {
+    pub fn visualize(&mut self, viewport: &Viewport) -> DrawResponse {
         match self.mode {
             ViewMode::RealTime => self.real_time.visualize(viewport),
             ViewMode::Snapshot => self.history.visualize(viewport),
@@ -119,12 +126,12 @@ impl RealTimeVisualizer {
             .map(|snapshot| snapshot.total_atoms)
     }
 
-    pub fn visualize(&mut self, viewport: &Viewport) -> Vec<Shape> {
+    pub fn visualize(&mut self, viewport: &Viewport) -> DrawResponse {
         if !self.is_enabled {
-            return vec![];
+            return DrawResponse::default();
         }
 
-        let mut shapes = Vec::new();
+        let mut response = DrawResponse::default();
 
         let border = self
             .border
@@ -132,14 +139,26 @@ impl RealTimeVisualizer {
             .iter()
             .map(|line| line.to_pixels(viewport).to_shape())
             .collect::<Vec<Shape>>();
-        shapes.extend(border);
+        response.shapes.extend(border);
 
         if let Some(snapshot) = &self.last_snapshot {
-            let atoms = snapshot.shapes(viewport);
-            shapes.extend(atoms);
+            let dots = snapshot.dots();
+
+            for dot in &dots {
+                if let Some(tooltip) = &dot.tooltip {
+                    response.tooltips.push(tooltip.clone());
+                }
+            }
+
+            let shapes = dots
+                .into_iter()
+                .map(|dot| dot.into_shape(viewport))
+                .collect::<Vec<Shape>>();
+
+            response.shapes.extend(shapes);
         }
 
-        shapes
+        response
     }
 
     pub fn finish(&mut self) {
@@ -200,16 +219,16 @@ impl SnapshotStorage {
         self.storage.clear();
     }
 
-    pub fn visualize(&mut self, viewport: &Viewport) -> Vec<Shape> {
+    pub fn visualize(&mut self, viewport: &Viewport) -> DrawResponse {
         let snapshot = if let Some(index) = self.current_index()
             && let Some(snapshot) = self.get(*index)
         {
             snapshot
         } else {
-            return vec![];
+            return DrawResponse::default();
         };
 
-        let mut shapes = Vec::new();
+        let mut response = DrawResponse::default();
 
         let mut border = Border::default();
         border.resize(&snapshot.size);
@@ -218,11 +237,22 @@ impl SnapshotStorage {
             .iter()
             .map(|line| line.to_pixels(viewport).to_shape())
             .collect::<Vec<Shape>>();
-        shapes.extend(border);
+        response.shapes.extend(border);
 
-        let atoms = snapshot.shapes(viewport);
-        shapes.extend(atoms);
+        let dots = snapshot.dots();
 
-        shapes
+        for dot in &dots {
+            if let Some(tooltip) = &dot.tooltip {
+                response.tooltips.push(tooltip.clone());
+            }
+        }
+
+        let dot_shapes = dots
+            .into_iter()
+            .map(|dot| dot.into_shape(viewport))
+            .collect::<Vec<Shape>>();
+        response.shapes.extend(dot_shapes);
+
+        response
     }
 }
