@@ -1,3 +1,4 @@
+use crate::backend::bugs::BugMode;
 use crate::backend::crystal::{AtomMovementProbability, CrystalSize};
 use crate::backend::simulation::{SimulationError, SimulationSettings};
 use rand::RngExt;
@@ -20,6 +21,8 @@ pub struct SimulationSettingsUi {
 
     pub border_width: usize,
     pub border_height: usize,
+
+    pub bug_mode: BugMode,
 }
 
 impl SimulationSettingsUi {
@@ -93,6 +96,8 @@ impl Default for SimulationSettingsUi {
 
             border_width: 10,
             border_height: 10,
+
+            bug_mode: BugMode::default(),
         }
     }
 }
@@ -127,6 +132,7 @@ impl TryFrom<SimulationSettingsUi> for SimulationSettings {
                 width: value.border_width + 1,
                 height: value.border_height + 1,
             },
+            bug_mode: value.bug_mode,
         })
     }
 }

@@ -1,3 +1,4 @@
+use crate::backend::bugs::BugMode;
 use crate::backend::commands::UiCommand;
 use crate::backend::simulation;
 use crate::backend::simulation::{SimulationError, SimulationSettings};
@@ -180,6 +181,24 @@ impl SettingsComponent {
                     .tx(commands_tx.clone())
                     .command(UiCommand::StopSimulation)
                     .show(ui);
+                ui.end_row();
+
+                ui.label(RichText::new("Bug Mode:").color(Color32::YELLOW));
+                egui::ComboBox::from_id_salt("bug_mode_combobox")
+                    .selected_text(settings.bug_mode.to_string())
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(&mut settings.bug_mode, BugMode::None, "Off");
+                        ui.selectable_value(
+                            &mut settings.bug_mode,
+                            BugMode::RaceCondition,
+                            "Race Condition",
+                        );
+                        ui.selectable_value(
+                            &mut settings.bug_mode,
+                            BugMode::Deadlock,
+                            "Deadlock",
+                        );
+                    });
                 ui.end_row();
 
                 ui.label("Seed Enabled:");

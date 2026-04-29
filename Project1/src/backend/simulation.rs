@@ -1,3 +1,4 @@
+use crate::backend::bugs::BugMode;
 use crate::backend::crystal::{AtomMovementProbability, Crystal, CrystalSize};
 use rand::RngExt;
 use rayon::iter::IntoParallelRefMutIterator;
@@ -98,6 +99,7 @@ pub struct SimulationSettings {
     pub seed: Option<u64>,
     pub atom_movement_probability: AtomMovementProbability,
     pub crystal_size: CrystalSize,
+    pub bug_mode: BugMode,
 }
 
 pub mod ranges {
