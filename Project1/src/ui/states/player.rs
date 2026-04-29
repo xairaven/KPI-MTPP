@@ -127,7 +127,7 @@ impl RealTimeVisualizer {
     }
 
     pub fn visualize(&mut self, viewport: &Viewport) -> DrawResponse {
-        if !self.is_enabled {
+        if !self.is_enabled && self.last_snapshot.is_none() {
             return DrawResponse::default();
         }
 
