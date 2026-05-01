@@ -1,6 +1,6 @@
 [package]
 name = "Project1"
-version = "0.0.1"
+version = "1.0.0"
 authors = ["Oleksandr Kovalov <kovalov.o.o.-im51mn@edu.kpi.ua>"]
 
 edition = "2024"
