@@ -10,3 +10,4 @@ University Labs.
 2. [Mechanisms of thread interaction and synchronization](./Lab2/)
 3. [Interprocess communication mechanisms in parallel programs with distributed memory](./Lab3/)
 4. [Simulation of Brownian Motion using multithreaded programming](./Project1/)
+5. [Parallel & distibuted chat system](./Project2/)
